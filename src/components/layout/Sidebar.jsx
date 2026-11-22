@@ -33,7 +33,7 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col justify-between shrink-0 min-h-[calc(100vh-4rem)]">
+    <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col justify-between shrink-0 h-full overflow-y-auto">
       {/* Navegación Principal */}
       <div className="p-4 space-y-6">
         <div>

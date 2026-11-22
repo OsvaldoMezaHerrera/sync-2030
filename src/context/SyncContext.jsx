@@ -9,62 +9,33 @@ import {
   PRACTICES_SEED,
   RETURN_KPIS
 } from '../data/seedData';
-import { INITIAL_DRAFT_MINUTES } from '../services/gemeloService';
+import {
+  MEMBER_DEFAULT_REPORTS,
+  INITIAL_MEETINGS_HISTORY,
+  INITIAL_SUGGESTED_REQUESTS
+} from '../services/gemeloService';
 
-const LOCAL_STORAGE_KEY = 'sync2030_state_v1';
-
-const INITIAL_PROPOSALS = [
-  {
-    id: 'prop-seed-1',
-    type: 'cultural_translation',
-    title: 'Alineación de Cronograma — Sistema de Diseño v2',
-    originSite: 'tokio',
-    author: 'Alan Gadiel (Tokio)',
-    originalText: 'Quizá sería posible revisar esto con más calma.',
-    intendedMeaning: 'No estoy de acuerdo con la fecha límite propuesta y considero que comprometería la calidad técnica del entregable.',
-    riskLevel: 'amarillo',
-    interpretationRisk: 'Berlín o Guadalajara pueden interpretar que la revisión es opcional o secundaria.',
-    proposedResponse: 'Comprendo la inquietud sobre el cronograma. Propongo revisar el alcance crítico del entregable para asegurar la calidad antes de fijar la fecha definitiva.',
-    targetCardId: 'card-1',
-    status: 'pending', // 'pending' | 'approved' | 'rejected'
-    createdAt: new Date().toISOString(),
-    approvedBy: null,
-    finalText: null,
-  }
-];
-
-const INITIAL_SCOPE_REQUESTS = [
-  {
-    id: 'scope-seed-1',
-    requester: 'Iván Ortega (Berlín)',
-    originSite: 'berlin',
-    requestedScope: 'Incorporación de módulo de métricas predictivas no planificado en sprint 12.',
-    gemeloResponse: 'El Gemelo de Sincronía no cuenta con facultades para comprometer al equipo en nuevos módulos o cambios de alcance. Solicitud derivada a Aprobación Humana.',
-    status: 'pending_review',
-    timestamp: new Date().toISOString(),
-  }
-];
+const LOCAL_STORAGE_KEY = 'sync2030_state_v2';
 
 const SyncContext = createContext(null);
 
 export function SyncProvider({ children }) {
-  // Inicialización desde localStorage con fallback a datos semilla
+  // 1. Integrante Activo
   const [activeUserId, setActiveUserId] = useState(() => {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         if (parsed.activeUserId) return parsed.activeUserId;
-      } catch (e) {
-        console.error('Error al cargar activeUserId de localStorage', e);
-      }
+      } catch (e) {}
     }
     return 'osvaldo-meza';
   });
 
+  // 2. Vista de navegación actual
   const [currentView, setCurrentView] = useState('panel-global');
 
-  // Estado del Horario Rotativo y la Agenda de la Junta Semanal
+  // 3. Horario Rotativo y Agenda 24h
   const [scheduleWeek, setScheduleWeek] = useState(() => {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
@@ -87,8 +58,8 @@ export function SyncProvider({ children }) {
     return INITIAL_AGENDA_STATE;
   });
 
-  // Estado del Escudo Anti-Fatiga y Perspectiva Horaria
-  const [simulationScenario, setSimulationScenario] = useState('real'); // 'real' | 'tokyo-night' | 'berlin-night' | 'gdl-night'
+  // 4. Escudo Anti-Fatiga y Perspectiva Horaria
+  const [simulationScenario, setSimulationScenario] = useState('real');
   
   const [antiFatigueMessages, setAntiFatigueMessages] = useState(() => {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -113,7 +84,7 @@ export function SyncProvider({ children }) {
     ];
   });
 
-  // Tarjetas del Tablero por Valor
+  // 5. Tarjetas del Tablero por Valor
   const [cards, setCards] = useState(() => {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
@@ -125,7 +96,44 @@ export function SyncProvider({ children }) {
     return INITIAL_CARDS;
   });
 
-  // ESTADO DEL GEMELO DE SINCRONÍA (MÓDULO 2)
+  // 6. ESTADO DEL GEMELO DE SINCRONÍA (MÓDULO 2)
+  // 6.1 Reportes personales por integrante
+  const [userReports, setUserReports] = useState(() => {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.userReports) return parsed.userReports;
+      } catch (e) {}
+    }
+    return MEMBER_DEFAULT_REPORTS;
+  });
+
+  // 6.2 Historial de reuniones recientes
+  const [recentMeetings, setRecentMeetings] = useState(() => {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed.recentMeetings)) return parsed.recentMeetings;
+      } catch (e) {}
+    }
+    return INITIAL_MEETINGS_HISTORY;
+  });
+
+  // 6.3 Solicitudes y Cambios Sugeridos (Aprobación Humana)
+  const [suggestedRequests, setSuggestedRequests] = useState(() => {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed.suggestedRequests)) return parsed.suggestedRequests;
+      } catch (e) {}
+    }
+    return INITIAL_SUGGESTED_REQUESTS;
+  });
+
+  // 6.4 Motor de IA vs Respaldo Manual
   const [twinAiEnabled, setTwinAiEnabled] = useState(() => {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
@@ -134,54 +142,22 @@ export function SyncProvider({ children }) {
         if (typeof parsed.twinAiEnabled === 'boolean') return parsed.twinAiEnabled;
       } catch (e) {}
     }
-    return true; // Motor IA activo por defecto
+    return true;
   });
 
-  const [pendingProposals, setPendingProposals] = useState(() => {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed.pendingProposals) return parsed.pendingProposals;
-      } catch (e) {}
-    }
-    return INITIAL_PROPOSALS;
-  });
-
-  const [pendingScopeRequests, setPendingScopeRequests] = useState(() => {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed.pendingScopeRequests) return parsed.pendingScopeRequests;
-      } catch (e) {}
-    }
-    return INITIAL_SCOPE_REQUESTS;
-  });
-
+  // 6.5 Minutas de respaldo manual
   const [manualSummaries, setManualSummaries] = useState(() => {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed.manualSummaries) return parsed.manualSummaries;
+        if (Array.isArray(parsed.manualSummaries)) return parsed.manualSummaries;
       } catch (e) {}
     }
     return [];
   });
 
-  const [sessionMinutes, setSessionMinutes] = useState(() => {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed.sessionMinutes) return parsed.sessionMinutes;
-      } catch (e) {}
-    }
-    return INITIAL_DRAFT_MINUTES;
-  });
-
-  // Guardar en localStorage cuando cambie el estado operativo
+  // Persistencia en localStorage
   useEffect(() => {
     const stateToSave = {
       activeUserId,
@@ -189,16 +165,16 @@ export function SyncProvider({ children }) {
       agendaState,
       antiFatigueMessages,
       cards,
+      userReports,
+      recentMeetings,
+      suggestedRequests,
       twinAiEnabled,
-      pendingProposals,
-      pendingScopeRequests,
       manualSummaries,
-      sessionMinutes,
     };
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
     } catch (e) {
-      console.error('Error al guardar en localStorage', e);
+      console.error('Error al guardar estado de SYNC 2030 en localStorage', e);
     }
   }, [
     activeUserId,
@@ -206,14 +182,17 @@ export function SyncProvider({ children }) {
     agendaState,
     antiFatigueMessages,
     cards,
+    userReports,
+    recentMeetings,
+    suggestedRequests,
     twinAiEnabled,
-    pendingProposals,
-    pendingScopeRequests,
     manualSummaries,
-    sessionMinutes,
   ]);
 
-  // Función para restaurar los datos iniciales limpios
+  // Usuario activo resuelto
+  const activeUser = TEAM_MEMBERS.find(m => m.id === activeUserId) || TEAM_MEMBERS[0];
+
+  // Métodos de gestión de datos
   const resetDemoData = () => {
     localStorage.removeItem(LOCAL_STORAGE_KEY);
     setActiveUserId('osvaldo-meza');
@@ -234,15 +213,15 @@ export function SyncProvider({ children }) {
       }
     ]);
     setCards(INITIAL_CARDS);
+    setUserReports(MEMBER_DEFAULT_REPORTS);
+    setRecentMeetings(INITIAL_MEETINGS_HISTORY);
+    setSuggestedRequests(INITIAL_SUGGESTED_REQUESTS);
     setTwinAiEnabled(true);
-    setPendingProposals(INITIAL_PROPOSALS);
-    setPendingScopeRequests(INITIAL_SCOPE_REQUESTS);
     setManualSummaries([]);
-    setSessionMinutes(INITIAL_DRAFT_MINUTES);
     setCurrentView('panel-global');
   };
 
-  // Envío o encolado de mensajes en el Escudo Anti-Fatiga
+  // Envío en Escudo Anti-Fatiga
   const sendAntiFatigueMessage = ({ targetSite, recipient, text, isUrgent, isDelayed, scheduledDelivery }) => {
     const newMessage = {
       id: `msg-${Date.now()}`,
@@ -258,7 +237,7 @@ export function SyncProvider({ children }) {
     setAntiFatigueMessages(prev => [newMessage, ...prev]);
   };
 
-  // Alternar estado de la agenda de 24h antes
+  // Alternar publicación de agenda de 24 horas antes
   const toggleAgenda24h = () => {
     setAgendaState(prev => ({
       ...prev,
@@ -267,55 +246,59 @@ export function SyncProvider({ children }) {
     }));
   };
 
-  // Alternar modo de respaldo manual (Apagar/Encender IA del Gemelo)
-  const toggleTwinAi = () => {
-    setTwinAiEnabled(prev => !prev);
+  // Actualizar reporte individual de un integrante para el Gemelo
+  const saveUserReport = (userId, reportData) => {
+    setUserReports(prev => ({
+      ...prev,
+      [userId]: {
+        ...reportData,
+        lastUpdated: `Hoy a las ${new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`,
+      },
+    }));
   };
 
-  // Agregar nueva propuesta generada desde el análisis del Gemelo
-  const addProposal = (proposal) => {
-    const newProposal = {
-      id: `prop-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      status: 'pending',
-      approvedBy: null,
-      finalText: null,
-      ...proposal,
-    };
-    setPendingProposals(prev => [newProposal, ...prev]);
-    return newProposal;
+  // Limpiar y restaurar historial de reuniones
+  const clearRecentMeetings = () => {
+    setRecentMeetings([]);
   };
 
-  // Candado de Aprobación Humana: Aprobar propuesta y sincronizar con Tablero por Valor
-  const approveProposal = (proposalId, customText = null) => {
-    const user = TEAM_MEMBERS.find(m => m.id === activeUserId) || TEAM_MEMBERS[0];
+  const restoreRecentMeetings = () => {
+    setRecentMeetings(INITIAL_MEETINGS_HISTORY);
+  };
 
-    setPendingProposals(prev =>
-      prev.map(p => {
-        if (p.id === proposalId) {
+  // Agregar nueva solicitud sugerida a la bandeja
+  const addSuggestedRequest = (req) => {
+    setSuggestedRequests(prev => [req, ...prev]);
+  };
+
+  // Candado de Aprobación Humana: Confirmar / Aprobar
+  const approveSuggestedRequest = (requestId, customNote = null) => {
+    setSuggestedRequests(prev =>
+      prev.map(r => {
+        if (r.id === requestId) {
           return {
-            ...p,
+            ...r,
             status: 'approved',
-            approvedBy: `${user.name} (${user.baseCity})`,
-            finalText: customText || p.proposedResponse,
-            approvedAt: new Date().toISOString(),
+            approvedBy: `${activeUser.name} (${activeUser.baseCity})`,
+            approvedAt: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+            humanNote: customNote,
           };
         }
-        return p;
+        return r;
       })
     );
 
-    // Si la propuesta está vinculada a una tarjeta del tablero, actualizarla
-    const targetProposal = pendingProposals.find(p => p.id === proposalId);
-    if (targetProposal && targetProposal.targetCardId) {
+    // Sincronizar en el Tablero por Valor si hay tarjeta vinculada
+    const targetReq = suggestedRequests.find(r => r.id === requestId);
+    if (targetReq && targetReq.targetCardId) {
       setCards(prevCards =>
         prevCards.map(c => {
-          if (c.id === targetProposal.targetCardId) {
+          if (c.id === targetReq.targetCardId) {
             return {
               ...c,
-              culturalTrafficLight: targetProposal.riskLevel || c.culturalTrafficLight,
-              acceptanceCriteria: c.acceptanceCriteria || 'Criterios de integración y cronograma ratificados por el equipo.',
-              lastHumanSync: `${user.name} el ${new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`,
+              culturalTrafficLight: targetReq.riskLevel || c.culturalTrafficLight,
+              acceptanceCriteria: c.acceptanceCriteria || `Aprobado en sesión: ${targetReq.intendedMeaning}`,
+              lastHumanSync: `${activeUser.name} a las ${new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`,
             };
           }
           return c;
@@ -324,43 +307,54 @@ export function SyncProvider({ children }) {
     }
   };
 
-  // Candado de Aprobación Humana: Rechazar propuesta
-  const rejectProposal = (proposalId) => {
-    const user = TEAM_MEMBERS.find(m => m.id === activeUserId) || TEAM_MEMBERS[0];
-    setPendingProposals(prev =>
-      prev.map(p => {
-        if (p.id === proposalId) {
+  // Candado de Aprobación Humana: Rechazar
+  const rejectSuggestedRequest = (requestId, reason = '') => {
+    setSuggestedRequests(prev =>
+      prev.map(r => {
+        if (r.id === requestId) {
           return {
-            ...p,
+            ...r,
             status: 'rejected',
-            approvedBy: `Rechazado por ${user.name} (${user.baseCity})`,
-            rejectedAt: new Date().toISOString(),
+            rejectedBy: `${activeUser.name} (${activeUser.baseCity})`,
+            rejectedAt: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+            rejectionReason: reason || 'Desestimado por directrices de alcance del sprint.',
           };
         }
-        return p;
+        return r;
       })
     );
   };
 
-  // Agregar solicitud de cambio de alcance retenida
-  const addScopeRequest = (requestData) => {
-    const newReq = {
-      id: `scope-${Date.now()}`,
-      timestamp: new Date().toISOString(),
-      status: 'pending_review',
-      ...requestData,
-    };
-    setPendingScopeRequests(prev => [newReq, ...prev]);
+  // Candado de Aprobación Humana: Posponer
+  const postponeSuggestedRequest = (requestId) => {
+    setSuggestedRequests(prev =>
+      prev.map(r => {
+        if (r.id === requestId) {
+          return {
+            ...r,
+            status: 'postponed',
+            postponedBy: `${activeUser.name} (${activeUser.baseCity})`,
+            postponedAt: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+          };
+        }
+        return r;
+      })
+    );
   };
 
-  // Registrar resumen manual rotativo (cuando el motor IA está en modo respaldo)
+  // Alternar motor de IA del Gemelo
+  const toggleTwinAi = () => {
+    setTwinAiEnabled(prev => !prev);
+  };
+
+  // Registrar resumen manual rotativo
   const addManualSummary = ({ keyPoints, decisions, nextActions }) => {
-    const user = TEAM_MEMBERS.find(m => m.id === activeUserId) || TEAM_MEMBERS[0];
     const newSummary = {
       id: `manual-${Date.now()}`,
-      authorName: user.name,
-      authorCity: user.baseCity,
-      timestamp: new Date().toISOString(),
+      authorName: activeUser.name,
+      authorCity: activeUser.baseCity,
+      timestamp: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+      date: new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }),
       keyPoints,
       decisions,
       nextActions,
@@ -368,19 +362,6 @@ export function SyncProvider({ children }) {
     };
     setManualSummaries(prev => [newSummary, ...prev]);
   };
-
-  // Aprobar minuta de sesión
-  const approveSessionMinutes = () => {
-    const user = TEAM_MEMBERS.find(m => m.id === activeUserId) || TEAM_MEMBERS[0];
-    setSessionMinutes(prev => ({
-      ...prev,
-      status: 'published',
-      approvedBy: `${user.name} (${user.baseCity})`,
-      publishedAt: new Date().toISOString(),
-    }));
-  };
-
-  const activeUser = TEAM_MEMBERS.find(m => m.id === activeUserId) || TEAM_MEMBERS[0];
 
   return (
     <SyncContext.Provider
@@ -402,20 +383,24 @@ export function SyncProvider({ children }) {
         cards,
         setCards,
         resetDemoData,
-        // Capacidades Módulo 2
+
+        // Módulo 2: Gemelo de Sincronía
+        userReports,
+        saveUserReport,
+        recentMeetings,
+        clearRecentMeetings,
+        restoreRecentMeetings,
+        suggestedRequests,
+        addSuggestedRequest,
+        approveSuggestedRequest,
+        rejectSuggestedRequest,
+        postponeSuggestedRequest,
         twinAiEnabled,
         toggleTwinAi,
-        pendingProposals,
-        approveProposal,
-        rejectProposal,
-        addProposal,
-        pendingScopeRequests,
-        addScopeRequest,
         manualSummaries,
         addManualSummary,
-        sessionMinutes,
-        approveSessionMinutes,
-        // Catálogos
+
+        // Catálogos globales
         teamMembers: TEAM_MEMBERS,
         sitesConfig: SITES_CONFIG,
         rotatingSchedule: ROTATING_SCHEDULE,

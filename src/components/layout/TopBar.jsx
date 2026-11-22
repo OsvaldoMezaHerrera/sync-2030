@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSync } from '../../context/SyncContext';
-import { Settings, RotateCcw, Check, Sparkles } from 'lucide-react';
+import { Settings, RotateCcw, Check } from 'lucide-react';
 
 export default function TopBar() {
   const { activeUser, activeUserId, setActiveUserId, teamMembers, resetDemoData } = useSync();
@@ -30,8 +30,8 @@ export default function TopBar() {
   };
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-20">
-      {/* Marca y Lema */}
+    <header className="h-16 shrink-0 bg-white border-b border-slate-200 px-6 flex items-center justify-between z-20">
+      {/* Marca y Lema Oficial */}
       <div className="flex items-center space-x-3">
         <div className="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-black text-lg shadow-sm">
           S
@@ -49,9 +49,9 @@ export default function TopBar() {
         </div>
       </div>
 
-      {/* Acciones y Selector de Usuario */}
+      {/* Acciones y Selector de Usuario Activo */}
       <div className="flex items-center space-x-3">
-        {/* Selector de usuario activo */}
+        {/* Selector de integrante activo */}
         <div className="flex items-center space-x-2 bg-slate-50 border border-slate-200 rounded-lg p-1.5 pl-3">
           <div className="flex flex-col text-right">
             <span className="text-xs font-bold text-slate-800 leading-tight">
@@ -68,7 +68,7 @@ export default function TopBar() {
             value={activeUserId}
             onChange={(e) => setActiveUserId(e.target.value)}
             className="text-xs bg-transparent border-0 text-slate-700 font-medium focus:ring-0 cursor-pointer ml-1"
-            title="Cambiar usuario activo"
+            title="Cambiar integrante activo"
           >
             {teamMembers.map((member) => (
               <option key={member.id} value={member.id}>
