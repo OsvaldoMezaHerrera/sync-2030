@@ -1,24 +1,30 @@
 # Active Context: SYNC 2030
 
 ## Foco Actual
-- **Fase:** Limpieza y refinamiento empresarial de la UI del Módulo 1 en cumplimiento estricto con la Regla de Producto Real de `AGENTS.md`.
-- **Estado de código:** Compilación validada con `npm run build` sin errores.
+- **Fase:** Módulo 2 (Gemelo de Sincronía) completado y compilado con éxito.
+- **Estado de código:** `npm run build` pasa limpiamente en 1.49s sin errores. Toda la interfaz cumple al 100% con la Regla de Producto Real (sin términos escolares ni etiquetas QA).
 
-## Cambios Recientes (Refinamiento Producto Real)
-- **TopBar.jsx:**
-  - Se retiró el botón visible de "Reiniciar datos demo".
-  - Se implementó un menú discreto de ajustes (`Settings`) en la esquina superior derecha con la opción *"Restaurar datos iniciales"* y retroalimentación sutil *"Entorno restaurado"*.
-  - Se limpió el tooltip del selector de integrantes a *"Cambiar usuario activo"*.
-- **Sidebar.jsx:**
-  - Se eliminó la etiqueta *"Pitch 90s"* del pie de navegación, reemplazándola por el indicador corporativo *"SYNC 2030 Enterprise • Producción"*.
-- **PanelGlobalView.jsx:**
-  - Se eliminaron todos los badges y etiquetas que referenciaban *"Prueba QA #5"* y *"Prueba QA #6"*.
-  - Se renombró el selector de simulación horaria a *"Perspectiva horaria"* con opciones ejecutivas (*"Hora local de sistema"*, *"Turno nocturno Tokio"*, *"Turno nocturno Berlín"*, *"Turno nocturno Guadalajara"*).
-  - Se renombró la sección a **"Política de Agenda 24h"** con acciones profesionales (*"Confirmar publicación de agenda 24h (Habilitar sala)"* / *"Desactivar agenda 24h (Activar bloqueo de sala)"*).
-  - Se renombró la sección de mensajería a **"Escudo Anti-Fatiga"** con badge corporativo *"Protocolo Activo"* y notificaciones formales de entrega programada.
-  - Se renombraron las salas a **"Espacios Inmersivos"**, eliminando por completo cualquier mención a *"Maqueta conceptual"* en la Sala de Alineación y en el resto de los espacios inmersivos.
-- **seedData.js:**
-  - Se renombró la tarjeta semilla incompleta a *"Estandarización de Esquemas GraphQL de Integración"* manteniendo la ausencia de dueño y criterios de aceptación para la regla de entrada.
+## Decisiones e Implementaciones Recientes (Módulo 2)
+- **Servicio Desacoplado (`src/services/gemeloService.js`):**
+  - Implementación 100% local y determinista (cero consumo de tokens, compatible offline).
+  - Análisis cultural con detección de intenciones:
+    - Tokio (alto contexto indirecto): *"Quizá sería posible revisar esto con más calma"* → Desacuerdo con la fecha límite / protección de calidad.
+    - Berlín (bajo contexto directo): *"Esto está mal, hay que rehacerlo"* → Error técnico de integración, no ataque personal.
+    - Guadalajara (iteración rápida): Orientación a entrega empírica con compuerta de calidad.
+  - Detector de cambio de alcance (`detectScopeChange`): Detecta peticiones no planificadas de nuevos módulos o alteración del sprint y bloquea el compromiso automático.
+- **Estado Global (`SyncContext.jsx`):**
+  - Añadido `twinAiEnabled`, `pendingProposals`, `pendingScopeRequests`, `manualSummaries`, `sessionMinutes`.
+  - Acción `approveProposal`: Registra la firma humana de la persona activa y sincroniza de inmediato la tarjeta correspondiente en el Tablero por Valor (`card-1`).
+  - Acción `rejectProposal` y `addManualSummary`.
+- **Vista [`GemeloSincroniaView.jsx`](file:///home/osvl/Proyectos/sync-2030/src/components/views/GemeloSincroniaView.jsx):**
+  - **Panel de Cobertura de Ausencia:** Reporte previo del ausente por huso horario (Alan Gadiel - Tokio) con entregables terminados, pendientes críticos y directrices permanentes.
+  - **Consola de Minuta Estructurada:** Acuerdos y acciones por sede, con firma humana requerida para su publicación oficial.
+  - **Traductor de Tono Cultural:** Presets rápidos, diagnóstico de riesgo, comparativa *Mensaje Original* vs *Intención Real*, y botón de transferencia a la bandeja de aprobación humana.
+  - **Candado de Aprobación Humana ("El humano siempre aprueba"):** Bandeja de propuestas con botones `Aprobar y sincronizar`, `Editar` y `Rechazar`, enlace directo hacia el Tablero por Valor tras aprobar, y bandeja de solicitudes de alcance retenidas por el Gemelo.
+  - **Interruptor de Modo Respaldo Manual:** Conmutador en el encabezado que desactiva la IA y activa el protocolo de bitácora manual rotativo preservando las decisiones previas.
 
 ## Siguientes Pasos
-- Proceder con la implementación del **Módulo 2: Gemelo de Sincronía** (`GemeloSincroniaView.jsx` y `culturalEngine.js`) asegurando desde el inicio un lenguaje 100% empresarial (sin términos escolares ni etiquetas QA visibles).
+- Construir el **Módulo 3: Tablero por Valor + Semáforo Cultural** (`TableroValorView.jsx` y `src/utils/boardRules.js`):
+  - Columnas Kanban (`Por hacer`, `En curso` con WIP ≤ 2 por persona, `En revisión`, `Terminado`).
+  - Regla estricta de entrada a `En curso` (bloqueo si falta dueño o criterio de aceptación).
+  - Semáforo Cultural (Verde, Amarillo, Rojo con cuenta regresiva en vivo de 24:00:00 y asignación automática del embajador neutral según el par de sedes en conflicto).

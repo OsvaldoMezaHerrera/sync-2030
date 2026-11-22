@@ -7,22 +7,22 @@
 
 ## 2. Motores de dominio y estado persistente
 
-- [ ] 2.1 Implementar los módulos puros en `src/utils/`: `culturalEngine.js` (traductor de tono Tokio/Berlín/Guadalajara + detector de cambio de alcance + cliente opcional OpenAI/LiteLLM con fallback local), `timezoneUtils.js` (relojes Tokio UTC+9, Berlín UTC+1, Guadalajara UTC-6, Escudo Anti-Fatiga y countdown 24h), `boardRules.js` (regla de entrada, WIP ≤ 2, asignación de embajador neutral) y `metricsCalculator.js` (fórmula de 8 prácticas y semáforo de adopción); verificar que cada regla responda correctamente a sus casos límite.
-- [x] 2.2 Implementar `src/context/SyncContext.jsx` con sincronización automática con `localStorage` (`sync2030_state_v1`), incluyendo acción `resetDemoData`, selector de integrante activo y persistencia tras recargar y restauración limpia al reiniciar.
+- [x] 2.1 Implementar los módulos puros en `src/utils/` y `src/services/gemeloService.js` (traductor de tono Tokio/Berlín/Guadalajara + detector de cambio de alcance desacoplado para LLM futuro, timezoneUtils con relojes y Escudo Anti-Fatiga); verificar determinismo y respuesta a casos límite.
+- [x] 2.2 Implementar `src/context/SyncContext.jsx` con sincronización automática con `localStorage` (`sync2030_state_v1`), incluyendo acción `resetDemoData`, selector de integrante activo, candado de aprobación humana, persistencia tras recargar y restauración limpia al reiniciar.
 
 ## 3. Shell de navegación y controles de Demo
 
-- [x] 3.1 Construir `Sidebar.jsx`, `TopBar.jsx` con la identidad **SYNC 2030** (*"No gestionamos horas. Gestionamos impacto."*), selector de los 7 integrantes reales, botón visible `Reiniciar datos demo` y placeholders funcionales; verificar navegación entre las 4 vistas sin errores de consola.
+- [x] 3.1 Construir `Sidebar.jsx`, `TopBar.jsx` con la identidad **SYNC 2030** (*"No gestionamos horas. Gestionamos impacto."*), selector de los 7 integrantes reales, menú discreto de ajustes de entorno y placeholders funcionales; verificar navegación entre las 4 vistas sin errores de consola.
 
 ## 4. Vista 1: Panel Global y Juntas Asíncronas
 
-- [x] 4.1 Implementar `PanelGlobalView.jsx` con relojes en vivo y estado `Activo`/`Descanso` para Tokio, Berlín y Guadalajara, selector de Horario Rotativo (Semana A 12:00 UTC y Semana B 13:00 UTC con compensación de Berlín), simulador de Escudo Anti-Fatiga (con opción de simular hora nocturna para Prueba #6) y reglas de bienestar.
-- [x] 4.2 Implementar el Validador de Junta con Agenda 24h antes (bloqueo/cancelación si falta agenda — Prueba #5) y la maqueta conceptual claramente etiquetada de las 4 Salas Inmersivas (Sala de Alineación con avatares, tablero compartido y sin reloj visible; Sala de Ensayo; Sala de Mentoría; Sala de Calma); verificar Pruebas #5 y #6 en vivo.
+- [x] 4.1 Implementar `PanelGlobalView.jsx` con relojes en vivo y estado `Activo`/`Descanso` para Tokio, Berlín y Guadalajara, selector de Horario Rotativo (Semana A 12:00 UTC y Semana B 13:00 UTC con compensación de Berlín), simulador de Escudo Anti-Fatiga (con perspectiva horaria para pruebas nocturnas) y reglas de bienestar.
+- [x] 4.2 Implementar la Política de Agenda 24h (bloqueo/cancelación de sala si falta agenda previa) y los Espacios Inmersivos (Sala de Alineación con avatares, tablero compartido y sin reloj visible; Sala de Ensayo; Sala de Mentoría; Sala de Calma).
 
 ## 5. Vista 2: Gemelo de Sincronía
 
-- [ ] 5.1 Implementar `GemeloSincroniaView.jsx` con reporte previo del ausente, borrador de minuta automática, traductor de tono cultural con frases precargadas y entrada libre (Prueba #2), candado inviolable *"El humano siempre aprueba"* con botones `Aprobar`, `Editar y aprobar` y `Rechazar` (Prueba #1), y bandeja `Pendiente de aprobación humana` para cambios de alcance/módulos nuevos.
-- [ ] 5.2 Implementar el botón `Simular Falla de IA` que apaga el Gemelo y activa el registro de resumen manual rotativo con aprobación humana sin perder decisiones (Prueba #7) y conectar la aprobación del mensaje de Tokio con la actualización inmediata de la tarjeta en el Tablero por Valor; verificar Pruebas #1, #2 y #7 en vivo.
+- [x] 5.1 Implementar `GemeloSincroniaView.jsx` con reporte previo del ausente, consola de minuta estructurada, traductor de tono cultural con presets y entrada libre, candado inviolable *"El humano siempre aprueba"* con botones `Aprobar y sincronizar`, `Editar` y `Rechazar`, y bandeja de solicitudes de alcance no autorizadas.
+- [x] 5.2 Implementar el interruptor de Modo Respaldo Manual que desactiva el motor de IA y activa el registro de bitácora manual rotativa con firma humana sin perder decisiones, conectando la aprobación de propuestas con la actualización de la tarjeta correspondiente en el Tablero por Valor.
 
 ## 6. Vista 3: Tablero por Valor + Semáforo Cultural
 
