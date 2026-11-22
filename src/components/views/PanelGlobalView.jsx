@@ -58,25 +58,22 @@ export default function PanelGlobalView() {
   const [isUrgent, setIsUrgent] = useState(false);
   const [notification, setNotification] = useState(null);
 
-  // Sala interactiva seleccionada para la Maqueta Conceptual
+  // Espacio inmersivo seleccionado
   const [selectedRoomId, setSelectedRoomId] = useState('alineacion');
 
-  // Calcular hora base considerando escenario de simulación
+  // Calcular hora base considerando perspectiva horaria
   const getSimulatedDate = () => {
     if (simulationScenario === 'tokyo-night') {
-      // 03:00 JST -> 18:00 UTC día anterior
       const d = new Date();
       d.setUTCHours(18, 0, 0, 0);
       return d;
     }
     if (simulationScenario === 'berlin-night') {
-      // 02:00 CET -> 01:00 UTC
       const d = new Date();
       d.setUTCHours(1, 0, 0, 0);
       return d;
     }
     if (simulationScenario === 'gdl-night') {
-      // 23:00 CST -> 05:00 UTC día siguiente
       const d = new Date();
       d.setUTCHours(5, 0, 0, 0);
       return d;
@@ -99,7 +96,7 @@ export default function PanelGlobalView() {
 
   const currentRotating = rotatingSchedule.weeks[scheduleWeek];
 
-  // Manejador del envío en el Escudo Anti-Fatiga (Prueba QA #6)
+  // Manejador del envío en el Escudo Anti-Fatiga
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!messageText.trim()) return;
@@ -124,7 +121,7 @@ export default function PanelGlobalView() {
     if (isDelayed) {
       setNotification({
         type: 'shield',
-        title: 'Escudo Anti-Fatiga Activado (Prueba QA #6)',
+        title: 'Escudo Anti-Fatiga Activado — Entrega Programada',
         message: `El mensaje para ${recipient} (${TIMEZONES[targetSite]?.name}) fue retenido porque su sede está en horario de descanso. Se programó para: ${scheduledDelivery}`,
       });
     } else {
@@ -174,7 +171,7 @@ export default function PanelGlobalView() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">
-            Módulo 1
+            Control Operativo
           </span>
           <h2 className="text-2xl font-black text-slate-900 tracking-tight mt-1">
             Panel Global y Juntas Asíncronas
@@ -184,19 +181,19 @@ export default function PanelGlobalView() {
           </p>
         </div>
 
-        {/* Selector de Simulación Horaria (Para probar Prueba QA #6 a cualquier hora del día) */}
+        {/* Perspectiva Horaria */}
         <div className="flex items-center space-x-2 bg-white border border-slate-200 rounded-lg p-2 shadow-sm">
           <Clock className="w-4 h-4 text-slate-500" />
-          <span className="text-xs font-semibold text-slate-600">Simulador de horario:</span>
+          <span className="text-xs font-semibold text-slate-600">Perspectiva horaria:</span>
           <select
             value={simulationScenario}
             onChange={(e) => setSimulationScenario(e.target.value)}
             className="text-xs font-medium text-slate-800 bg-slate-50 border border-slate-300 rounded px-2 py-1 focus:ring-1 focus:ring-indigo-500"
           >
-            <option value="real">Hora real del sistema</option>
-            <option value="tokyo-night">Noche en Tokio (03:00 JST)</option>
-            <option value="berlin-night">Noche en Berlín (02:00 CET)</option>
-            <option value="gdl-night">Noche en Guadalajara (23:00 CST)</option>
+            <option value="real">Hora local de sistema</option>
+            <option value="tokyo-night">Turno nocturno Tokio (03:00 JST)</option>
+            <option value="berlin-night">Turno nocturno Berlín (02:00 CET)</option>
+            <option value="gdl-night">Turno nocturno Guadalajara (23:00 CST)</option>
           </select>
         </div>
       </div>
@@ -253,7 +250,7 @@ export default function PanelGlobalView() {
                   <span className="font-medium text-slate-700">{site.workHours}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Embajador:</span>
+                  <span className="text-slate-400">Embajador cultural:</span>
                   <span className="font-medium text-slate-700">{site.leadAmbassador}</span>
                 </div>
               </div>
@@ -349,24 +346,24 @@ export default function PanelGlobalView() {
         </div>
       </div>
 
-      {/* SECCIÓN 3: Validador de Junta con Agenda 24h & Escudo Anti-Fatiga */}
+      {/* SECCIÓN 3: Política de Agenda 24h & Escudo Anti-Fatiga */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Validador de Junta con Agenda 24h (Prueba QA #5) */}
+        {/* Política de Agenda 24h */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between space-y-4">
           <div>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Shield className="w-5 h-5 text-indigo-600" />
                 <h3 className="text-base font-bold text-slate-900">
-                  Validador de Junta con Agenda 24h
+                  Política de Agenda 24h
                 </h3>
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
-                Prueba QA #5
+              <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200">
+                Control de Agenda
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              Regla inquebrantable: Se cancela o bloquea automáticamente cualquier junta si no existe agenda publicada al menos 24 horas antes.
+              Gobernanza de reuniones: La Sala de Alineación requiere agenda validada con al menos 24 horas de antelación para garantizar sesiones productivas y proteger el tiempo del equipo.
             </p>
 
             <div className="mt-4 p-4 rounded-xl border space-y-3 bg-slate-50">
@@ -413,33 +410,33 @@ export default function PanelGlobalView() {
               {agendaState.published24hBefore ? (
                 <>
                   <Lock className="w-4 h-4" />
-                  <span>Simular Falta de Agenda (Probar Bloqueo QA #5)</span>
+                  <span>Desactivar agenda 24h (Activar bloqueo de sala)</span>
                 </>
               ) : (
                 <>
                   <Unlock className="w-4 h-4" />
-                  <span>Validar Agenda 24h (Desbloquear Sala de Alineación)</span>
+                  <span>Confirmar publicación de agenda 24h (Habilitar sala)</span>
                 </>
               )}
             </button>
           </div>
         </div>
 
-        {/* Simulador del Escudo Anti-Fatiga (Prueba QA #6) */}
+        {/* Escudo Anti-Fatiga */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <ShieldAlert className="w-5 h-5 text-indigo-600" />
               <h3 className="text-base font-bold text-slate-900">
-                Simulador del Escudo Anti-Fatiga
+                Escudo Anti-Fatiga
               </h3>
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
-              Prueba QA #6
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+              Protocolo Activo
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            Mensajes no urgentes fuera de horario se programan para la mañana del destinatario (09:00 local).
+            Mensajes no urgentes fuera de horario local se programan para el inicio de jornada del destinatario (09:00).
           </p>
 
           <form onSubmit={handleSendMessage} className="space-y-3 pt-1">
@@ -519,7 +516,7 @@ export default function PanelGlobalView() {
           {/* Últimos mensajes gestionados por el Escudo */}
           <div className="pt-2 border-t border-slate-100 space-y-2">
             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">
-              Cola de Mensajes del Escudo ({antiFatigueMessages.length}):
+              Mensajes en Cola y Entregados ({antiFatigueMessages.length}):
             </span>
             <div className="max-h-28 overflow-y-auto space-y-2 pr-1">
               {antiFatigueMessages.map((msg) => (
@@ -557,18 +554,15 @@ export default function PanelGlobalView() {
         </div>
       </div>
 
-      {/* SECCIÓN 4: Maqueta Conceptual de las 4 Salas Inmersivas */}
+      {/* SECCIÓN 4: Espacios Inmersivos */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
             <div className="flex items-center space-x-2">
               <Sparkles className="w-5 h-5 text-indigo-600" />
               <h3 className="text-lg font-bold text-slate-900">
-                Salas Inmersivas
+                Espacios Inmersivos
               </h3>
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-black border border-amber-300">
-                Maqueta conceptual
-              </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
               Entornos inmersivos para sincronía cultural y deliberación sin fricción visual.
@@ -595,7 +589,7 @@ export default function PanelGlobalView() {
 
         {/* Inspección de la Sala Seleccionada */}
         {selectedRoomId === 'alineacion' ? (
-          /* Sala de Alineación con validación de agenda (Prueba QA #5) */
+          /* Sala de Alineación con validación de agenda */
           !agendaState.published24hBefore ? (
             <div className="bg-rose-50 border-2 border-dashed border-rose-300 rounded-2xl p-8 text-center space-y-3">
               <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
@@ -612,18 +606,18 @@ export default function PanelGlobalView() {
                   onClick={toggleAgenda24h}
                   className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors shadow-sm"
                 >
-                  Publicar Agenda 24h y Desbloquear Sala
+                  Registrar Agenda 24h y Desbloquear Sala
                 </button>
               </div>
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Etiqueta explícita de maqueta y aviso sin reloj */}
+              {/* Encabezado de la Sala de Alineación */}
               <div className="flex items-center justify-between bg-slate-900 text-white p-4 rounded-xl">
                 <div className="flex items-center space-x-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                   <span className="text-xs font-bold uppercase tracking-wider">
-                    Sala de Alineación Activa — Maqueta Conceptual
+                    Sala de Alineación en Vivo
                   </span>
                 </div>
                 <div className="flex items-center space-x-2 text-xs text-slate-400">
@@ -632,7 +626,7 @@ export default function PanelGlobalView() {
                 </div>
               </div>
 
-              {/* Simulación visual de Avatares del equipo en la mesa inmersiva */}
+              {/* Avatares del equipo en la mesa inmersiva */}
               <div className="bg-slate-900/95 border border-slate-800 rounded-2xl p-6 text-white space-y-6">
                 <div>
                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
@@ -699,9 +693,6 @@ export default function PanelGlobalView() {
                 </span>
                 <h4 className="text-lg font-bold text-slate-900 mt-0.5">{selectedRoom.name}</h4>
               </div>
-              <span className="text-xs bg-slate-200 text-slate-700 font-bold px-2.5 py-1 rounded-full">
-                Maqueta conceptual
-              </span>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed">
               {selectedRoom.description}

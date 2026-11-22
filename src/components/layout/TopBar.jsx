@@ -1,9 +1,33 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useSync } from '../../context/SyncContext';
-import { RotateCcw, User, ShieldCheck, Clock } from 'lucide-react';
+import { Settings, RotateCcw, Check, Sparkles } from 'lucide-react';
 
 export default function TopBar() {
   const { activeUser, activeUserId, setActiveUserId, teamMembers, resetDemoData } = useSync();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const settingsRef = useRef(null);
+
+  // Cerrar menú de ajustes al hacer clic fuera
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (settingsRef.current && !settingsRef.current.contains(event.target)) {
+        setIsSettingsOpen(false);
+        setShowResetConfirm(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleReset = () => {
+    resetDemoData();
+    setShowResetConfirm(true);
+    setTimeout(() => {
+      setShowResetConfirm(false);
+      setIsSettingsOpen(false);
+    }, 1500);
+  };
 
   return (
     <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-20">
@@ -26,18 +50,8 @@ export default function TopBar() {
       </div>
 
       {/* Acciones y Selector de Usuario */}
-      <div className="flex items-center space-x-4">
-        {/* Botón de Reinicio Demo */}
-        <button
-          onClick={resetDemoData}
-          title="Restaura todos los datos al estado semilla de la demo"
-          className="flex items-center space-x-1.5 text-xs font-medium text-slate-600 hover:text-indigo-600 bg-slate-100 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 px-3 py-1.5 rounded-lg transition-colors"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-          <span className="hidden md:inline">Reiniciar datos demo</span>
-        </button>
-
-        {/* Selector de integrante activo */}
+      <div className="flex items-center space-x-3">
+        {/* Selector de usuario activo */}
         <div className="flex items-center space-x-2 bg-slate-50 border border-slate-200 rounded-lg p-1.5 pl-3">
           <div className="flex flex-col text-right">
             <span className="text-xs font-bold text-slate-800 leading-tight">
@@ -54,7 +68,7 @@ export default function TopBar() {
             value={activeUserId}
             onChange={(e) => setActiveUserId(e.target.value)}
             className="text-xs bg-transparent border-0 text-slate-700 font-medium focus:ring-0 cursor-pointer ml-1"
-            title="Cambiar integrante activo para la prueba de interacción"
+            title="Cambiar usuario activo"
           >
             {teamMembers.map((member) => (
               <option key={member.id} value={member.id}>
@@ -62,6 +76,50 @@ export default function TopBar() {
               </option>
             ))}
           </select>
+        </div>
+
+        {/* Menú discreto de Ajustes y Restauración de Entorno */}
+        <div className="relative" ref={settingsRef}>
+          <button
+            onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+            className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors"
+            title="Ajustes de entorno"
+            aria-label="Ajustes de entorno"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
+
+          {isSettingsOpen && (
+            <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-30 text-xs">
+              <div className="px-4 py-2 border-b border-slate-100">
+                <p className="font-bold text-slate-800">Ajustes del Sistema</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Gestión de datos y preferencias</p>
+              </div>
+
+              <div className="p-2">
+                <button
+                  onClick={handleReset}
+                  className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors text-left"
+                >
+                  {showResetConfirm ? (
+                    <>
+                      <Check className="w-4 h-4 text-emerald-600" />
+                      <span className="font-semibold text-emerald-700">Entorno restaurado</span>
+                    </>
+                  ) : (
+                    <>
+                      <RotateCcw className="w-4 h-4 text-slate-500" />
+                      <span>Restaurar datos iniciales</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div className="px-4 py-1.5 border-t border-slate-100 text-[10px] text-slate-400">
+                SYNC 2030 Enterprise • Local Data Store
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>

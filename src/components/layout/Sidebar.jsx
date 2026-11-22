@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSync } from '../../context/SyncContext';
-import { Globe, Bot, Kanban, BarChart3, ShieldCheck, Sparkles } from 'lucide-react';
+import { Globe, Bot, Kanban, BarChart3, ShieldCheck } from 'lucide-react';
 
 export default function Sidebar() {
   const { currentView, setCurrentView } = useSync();
@@ -89,8 +89,8 @@ export default function Sidebar() {
       {/* Pie del Menú */}
       <div className="p-4 border-t border-slate-800 text-slate-400 text-[11px] space-y-1">
         <div className="flex items-center justify-between font-medium text-slate-300">
-          <span>SYNC 2030 v1.0</span>
-          <span>Pitch 90s</span>
+          <span>SYNC 2030 Enterprise</span>
+          <span className="text-[10px] text-emerald-400 font-semibold">Producción</span>
         </div>
         <p className="text-slate-400">
           Tokio (UTC+9) • Berlín (UTC+1) • Guadalajara (UTC-6)

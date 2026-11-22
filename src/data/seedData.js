@@ -264,11 +264,11 @@ export const INITIAL_CARDS = [
   },
   {
     id: 'card-4',
-    title: 'Tarjeta de Prueba QA #4 (Sin dueño ni criterios)',
+    title: 'Estandarización de Esquemas GraphQL de Integración',
     column: 'por-hacer',
     ownerId: '',
     acceptanceCriteria: '',
-    okr: 'Validación de regla estricta de entrada al tablero',
+    okr: 'Estabilidad de contratos API entre sedes',
     sites: ['Guadalajara'],
     culturalTrafficLight: 'verde',
     createdAt: '2026-11-21T09:00:00Z',
