@@ -15,8 +15,13 @@ import {
   INITIAL_MEETINGS_HISTORY,
   INITIAL_SUGGESTED_REQUESTS
 } from '../services/gemeloService';
+import {
+  calculateNeutralAmbassador,
+  validateEntryRule,
+  validateWipLimit
+} from '../utils/boardRules';
 
-const LOCAL_STORAGE_KEY = 'sync2030_state_v2';
+const LOCAL_STORAGE_KEY = 'sync2030_state_v3';
 
 const SyncContext = createContext(null);
 
@@ -312,17 +317,202 @@ export function SyncProvider({ children }) {
       setCards(prevCards =>
         prevCards.map(c => {
           if (c.id === targetReq.targetCardId) {
+            const isRed = targetReq.riskLevel === 'rojo';
+            const neutralAmb = isRed ? calculateNeutralAmbassador(c.sites) : c.neutralAmbassador;
             return {
               ...c,
               culturalTrafficLight: targetReq.riskLevel || c.culturalTrafficLight,
               acceptanceCriteria: c.acceptanceCriteria || `Aprobado en sesión: ${targetReq.intendedMeaning}`,
               lastHumanSync: `${activeUser.name} a las ${new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`,
+              redCountdownExpiresAt: isRed ? (c.redCountdownExpiresAt || new Date(Date.now() + 24 * 3600 * 1000).toISOString()) : c.redCountdownExpiresAt,
+              neutralAmbassador: neutralAmb,
+              redAlertTriggeredAt: isRed ? (c.redAlertTriggeredAt || new Date().toISOString()) : c.redAlertTriggeredAt,
             };
           }
           return c;
         })
       );
     }
+  };
+
+  // MÓDULO 3: GOBERNANZA Y GESTIÓN DEL TABLERO POR VALOR
+  // 1. Mover tarjeta entre columnas con validación estricta de gobernanza
+  const moveCard = (cardId, targetColumn) => {
+    const card = cards.find(c => c.id === cardId);
+    if (!card) return { success: false, reason: 'NOT_FOUND', message: 'Tarjeta no encontrada.' };
+
+    if (card.column === targetColumn) {
+      return { success: true };
+    }
+
+    // Regla estricta de entrada a "En curso"
+    if (targetColumn === 'en-curso') {
+      const entryValidation = validateEntryRule(card);
+      if (!entryValidation.isValid) {
+        return {
+          success: false,
+          reason: 'ENTRY_RULE',
+          missing: entryValidation.missing,
+          message: entryValidation.message,
+          card,
+        };
+      }
+
+      // Límite WIP: Máximo 2 tarjetas en curso por integrante
+      const wipValidation = validateWipLimit(cards, card.ownerId, card.id);
+      if (!wipValidation.allowed) {
+        return {
+          success: false,
+          reason: 'WIP_LIMIT',
+          ownerId: card.ownerId,
+          message: wipValidation.message,
+          card,
+        };
+      }
+    }
+
+    setCards(prev =>
+      prev.map(c => (c.id === cardId ? { ...c, column: targetColumn } : c))
+    );
+
+    return { success: true };
+  };
+
+  // 2. Actualizar tarjeta con validaciones y cálculo del semáforo
+  const updateCard = (cardId, updatedFields) => {
+    const card = cards.find(c => c.id === cardId);
+    if (!card) return { success: false, reason: 'NOT_FOUND', message: 'Tarjeta no encontrada.' };
+
+    const candidate = { ...card, ...updatedFields };
+
+    // Si la tarjeta está o pasa a "En curso", validar reglas de gobernanza
+    if (candidate.column === 'en-curso') {
+      const entryValidation = validateEntryRule(candidate);
+      if (!entryValidation.isValid) {
+        return {
+          success: false,
+          reason: 'ENTRY_RULE',
+          missing: entryValidation.missing,
+          message: entryValidation.message,
+          card: candidate,
+        };
+      }
+
+      const wipValidation = validateWipLimit(cards, candidate.ownerId, cardId);
+      if (!wipValidation.allowed) {
+        return {
+          success: false,
+          reason: 'WIP_LIMIT',
+          ownerId: candidate.ownerId,
+          message: wipValidation.message,
+          card: candidate,
+        };
+      }
+    }
+
+    // Si cambia a "rojo" y no tenía cuenta regresiva activa
+    if (candidate.culturalTrafficLight === 'rojo') {
+      candidate.neutralAmbassador = calculateNeutralAmbassador(candidate.sites || card.sites);
+      if (!candidate.redCountdownExpiresAt) {
+        candidate.redCountdownExpiresAt = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+        candidate.redAlertTriggeredAt = new Date().toISOString();
+      }
+    } else if (card.culturalTrafficLight === 'rojo' && candidate.culturalTrafficLight !== 'rojo') {
+      // Si baja de rojo a amarillo o verde
+      candidate.redCountdownExpiresAt = null;
+    }
+
+    setCards(prev => prev.map(c => (c.id === cardId ? candidate : c)));
+    return { success: true, card: candidate };
+  };
+
+  // 3. Crear nueva tarjeta con validaciones iniciales
+  const createCard = (cardData) => {
+    const newId = `card-${Date.now()}`;
+    const sites = Array.isArray(cardData.sites) && cardData.sites.length > 0 ? cardData.sites : ['Guadalajara'];
+    const trafficLight = cardData.culturalTrafficLight || 'verde';
+
+    const candidate = {
+      id: newId,
+      title: cardData.title || 'Iniciativa sin título',
+      column: cardData.column || 'por-hacer',
+      ownerId: cardData.ownerId || '',
+      acceptanceCriteria: cardData.acceptanceCriteria || '',
+      okr: cardData.okr || 'Impacto operativo verificado',
+      sites,
+      culturalTrafficLight: trafficLight,
+      createdAt: new Date().toISOString(),
+      redCountdownExpiresAt: null,
+      neutralAmbassador: null,
+      frictionReason: cardData.frictionReason || '',
+    };
+
+    // Si se crea directamente en rojo
+    if (candidate.culturalTrafficLight === 'rojo') {
+      candidate.neutralAmbassador = calculateNeutralAmbassador(candidate.sites);
+      candidate.redCountdownExpiresAt = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+      candidate.redAlertTriggeredAt = new Date().toISOString();
+    }
+
+    // Si se crea directamente en "En curso"
+    if (candidate.column === 'en-curso') {
+      const entryValidation = validateEntryRule(candidate);
+      if (!entryValidation.isValid) {
+        return {
+          success: false,
+          reason: 'ENTRY_RULE',
+          missing: entryValidation.missing,
+          message: entryValidation.message,
+          card: candidate,
+        };
+      }
+
+      const wipValidation = validateWipLimit(cards, candidate.ownerId, null);
+      if (!wipValidation.allowed) {
+        return {
+          success: false,
+          reason: 'WIP_LIMIT',
+          ownerId: candidate.ownerId,
+          message: wipValidation.message,
+          card: candidate,
+        };
+      }
+    }
+
+    setCards(prev => [candidate, ...prev]);
+    return { success: true, card: candidate };
+  };
+
+  // 4. Registrar intervención del embajador neutral para resolver una alerta roja
+  const resolveRedCard = (cardId, newTrafficLight = 'amarillo', resolutionNote = '') => {
+    const card = cards.find(c => c.id === cardId);
+    if (!card) return { success: false, message: 'Tarjeta no encontrada.' };
+
+    const resolutionEntry = {
+      resolvedAt: new Date().toISOString(),
+      resolvedTime: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+      resolvedBy: card.neutralAmbassador || `${activeUser.name} (${activeUser.baseCity})`,
+      previousLight: 'rojo',
+      newLight: newTrafficLight,
+      note: resolutionNote || 'Intervención de mediación cultural completada satisfactoriamente.',
+    };
+
+    setCards(prev =>
+      prev.map(c => {
+        if (c.id === cardId) {
+          return {
+            ...c,
+            culturalTrafficLight: newTrafficLight,
+            redCountdownExpiresAt: null,
+            lastResolution: resolutionEntry,
+            resolutionHistory: [...(c.resolutionHistory || []), resolutionEntry],
+          };
+        }
+        return c;
+      })
+    );
+
+    return { success: true };
   };
 
   // Candado de Aprobación Humana: Rechazar
@@ -459,6 +649,10 @@ export function SyncProvider({ children }) {
         sendAntiFatigueMessage,
         cards,
         setCards,
+        moveCard,
+        updateCard,
+        createCard,
+        resolveRedCard,
         resetSystemData,
 
         // Módulo 2: Gemelo de Sincronía

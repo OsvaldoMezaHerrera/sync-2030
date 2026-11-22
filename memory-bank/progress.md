@@ -27,10 +27,23 @@
     - Pestaña 1: *Solicitudes y Aprobaciones* con contador badge de pendientes, Traductor Cultural (*Mensaje original* vs *Intención real* y semáforo) y 3 acciones operativas (Confirmar, Solicitar detalles por correo prellenado, Rechazar/Posponer).
     - Pestaña 2: *Mi Reporte al Gemelo* (Qué hice, qué falta, bloqueos y bloque de Reuniones Delegadas al Gemelo enlazadas a `SyncContext`).
     - Pestaña 3: *Minutas y Consola* (Resumen con estado vacío *"Sin reuniones recientes"*, consola interactiva de intervención y conmutador de Respaldo Manual con bitácora rotativa).
-- [x] Verificación de compilación: `npm run build` ejecutado exitosamente en 1.40s sin errores.
-- [x] Auditoría de términos de UI: 100% libre de términos prohibidos ("Demo", "Prueba QA", "Pitch", "Maqueta conceptual").
+- [x] **Módulo 3: Tablero por Valor y Semáforo Cultural (`TableroValorView.jsx` y `src/utils/boardRules.js`):**
+  - Tablero Kanban con 4 columnas limpias: `Por hacer`, `En curso`, `En revisión` y `Terminado`.
+  - Tarjetas compactas con borde izquierdo de acento visual según el Semáforo Cultural (Verde, Amarillo o Rojo), flags de sedes (`🇯🇵 Tokio`, `🇲🇽 Guadalajara`, `🇩🇪 Berlín`), avatar del responsable, OKR vinculado y criterio de aceptación.
+  - **Regla Estricta de Entrada:** Bloquea mover cualquier tarjeta a "En curso" si le falta dueño o criterio de aceptación con aviso corporativo explicativo (`GovernanceAlertModal`) y acceso directo a completarlo.
+  - **Límite WIP:** Máximo 2 tarjetas en "En curso" por integrante; bloqueo inmediato y notificación de bienestar digital si se intenta asignar una tercera.
+  - **Semáforo Cultural y SLA 24h:**
+    - Alertas Rojas activan reloj regresivo de 24:00:00 en tiempo real y asignación automática del embajador neutral según el cruce de sedes:
+      * Tokio–Berlín → Brayan Beltrán (Guadalajara).
+      * Guadalajara–Berlín → Alan Gadiel (Tokio).
+      * Tokio–Guadalajara → Osvaldo Meza (con apoyo de Berlín).
+    - Botón en tarjetas rojas y modal especializado (`AmbassadorInterventionModal`) para registrar acuerdos de mediación cultural y pasar la tarjeta a Amarillo o Verde.
+  - **Sincronización bidireccional:** Conexión en tiempo real con las aprobaciones confirmadas en el Gemelo de Sincronía.
+  - Barra superior de filtros rápidos por Semáforo, por Sede y por Integrante.
+  - Modal de detalle y edición rápida (`CardDetailModal`) y modal de nueva tarjeta (`NewCardModal`).
+- [x] Verificación de compilación: `npm run build` ejecutado exitosamente en 1.54s sin errores ni advertencias.
+- [x] Auditoría de términos de UI: 100% libre de términos prohibidos ("Demo", "Prueba QA", "Pitch", "Maqueta conceptual", etc.).
 
 ## En Curso / Próximos Hitos
-- [ ] **Módulo 3:** Tablero por Valor + Semáforo Cultural (Límite WIP ≤ 2 por persona, regla estricta de entrada con dueño y criterio de aceptación, reloj regresivo de 24h y asignación de embajador neutral).
 - [ ] **Módulo 4:** Medición (% de Aplicación con fórmula ponderada de 8 prácticas y panel de 7 indicadores de impacto/retorno).
 - [ ] Validación de extremo a extremo de las 7 pruebas funcionales y ejecución de la demostración gerencial.
