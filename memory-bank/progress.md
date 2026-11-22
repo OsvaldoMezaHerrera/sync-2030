@@ -47,9 +47,20 @@
   - Indicador discreto en cabecera del tablero: "Orden: Semáforo + FIFO".
   - Scroll vertical independiente en cada una de las 4 columnas con encabezado fijo (`sticky top-0`).
   - Resaltado visual temporal (~2s) y notificación toast en la esquina inferior derecha confirmando traslados de columna y actualizaciones.
-- [x] Verificación de compilación: `npm run build` ejecutado exitosamente en 1.47s sin errores ni advertencias.
+- [x] **Módulo 4: Medición de Aplicación e Impacto (`MedicionView.jsx`):**
+  - Organización en 2 pestañas limpias sin scroll excesivo: *Índice de Aplicación* y *Retorno en Cohesión e Innovación*.
+  - **Pestaña 1 (Índice de Aplicación):**
+    - Resumen ejecutivo superior con cálculo en tiempo real de la fórmula oficial `% Aplicación = Σ (peso_i × cumplimiento_i) ÷ 100` y semáforo automático (Consolidado ≥85%, En adopción 70–84.9%, En riesgo <70%).
+    - Barra de progreso discreta y continua con los 3 hitos de referencia: Semana 4 (60%), Semana 8 (75%) y Semana 12 (85%).
+    - Panel de las 8 prácticas ponderadas con pesos exactos (15, 10, 10, 15, 15, 10, 15 y 10 = 100%), responsable, cadencia (semanal/quincenal), control deslizante (`slider`) + campo numérico editable con sincronización reactiva inmediata.
+    - Registro de Auditoría Semanal por muestreo liderado por Iván Ortega (QA / Auditor de Procesos) con cálculo de discrepancia en vivo y alerta destacada ante desviaciones > 10%.
+  - **Pestaña 2 (Retorno en Cohesión e Innovación):**
+    - Tarjeta ejecutiva con el lema oficial *"No gestionamos horas. Gestionamos impacto."* y métricas agregadas de reducción de reuniones y bienestar digital.
+    - Grid de los 7 indicadores de impacto (5 base + 2 de innovación): Horas de reuniones en vivo, Bienestar digital, Conflictos escalados a gerencia, Confianza intercultural, Entregas a tiempo, Retrabajo por entrega y Mejoras aplicadas por sprint.
+    - Cada tarjeta muestra Línea base, Valor actual y Meta Semana 12 (supuesto proyectado), con barra de avance proporcional hacia la meta y modal discreto de actualización de mediciones.
+  - Persistencia completa en `SyncContext` y `localStorage`, con restablecimiento en el botón de ajustes de entorno ("Restaurar datos iniciales").
+- [x] Verificación de compilación: `npm run build` ejecutado exitosamente en 1.52s sin errores ni advertencias.
 - [x] Auditoría de términos de UI: 100% libre de términos prohibidos ("Demo", "Prueba QA", "Pitch", "Maqueta conceptual", etc.).
 
 ## En Curso / Próximos Hitos
-- [ ] **Módulo 4:** Medición (% de Aplicación con fórmula ponderada de 8 prácticas y panel de 7 indicadores de impacto/retorno).
-- [ ] Validación de extremo a extremo de las 7 pruebas funcionales y ejecución de la demostración gerencial.
+- [ ] Validación de extremo a extremo de las 7 pruebas funcionales y ejecución fluida del flujo gerencial transversal.

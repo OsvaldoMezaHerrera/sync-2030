@@ -356,69 +356,147 @@ export const PRACTICES_SEED = [
   { id: 8, name: 'Escudo anti-fatiga respetado', weight: 10, owner: 'Fernando Garrido', cadence: 'Quincenal', currentPercent: 90 },
 ];
 
+export const INITIAL_AUDIT_LOGS = [
+  {
+    id: 'audit-1',
+    week: 'Semana 11',
+    practiceId: 1,
+    practiceName: 'El humano aprueba con el Gemelo',
+    reportedPercent: 100,
+    auditedPercent: 96,
+    discrepancy: 4,
+    status: 'conformidad', // 'conformidad' | 'alerta'
+    auditor: 'Iván Ortega (QA / Berlín)',
+    date: '2026-11-20',
+    observations: 'Muestreo aleatorio de 25 interacciones en consola: 24 contaron con confirmación explícita previa al despacho. Margen de tolerancia aceptable.'
+  },
+  {
+    id: 'audit-2',
+    week: 'Semana 11',
+    practiceId: 5,
+    practiceName: 'Juntas rediseñadas con agenda y acta',
+    reportedPercent: 80,
+    auditedPercent: 68,
+    discrepancy: 12,
+    status: 'alerta',
+    auditor: 'Iván Ortega (QA / Berlín)',
+    date: '2026-11-21',
+    observations: 'En 3 de 8 sesiones no se localizó la minuta en el repositorio central dentro de las 2 horas posteriores al término. Se requiere reforzar la compensación de Berlín.'
+  }
+];
+
 export const RETURN_KPIS = [
   {
     id: 'kpi-1',
     name: 'Horas de reuniones en vivo',
-    category: 'Base',
-    baseline: '15 horas semanales / persona',
-    targetWeek12: '60% menos (6 horas / persona)',
-    unit: 'Horas',
-    status: 'En camino',
+    category: 'Eficiencia de Agenda',
+    type: 'base',
+    baseline: '15 h/semana',
+    baselineValue: 15,
+    currentValue: 7.5,
+    unit: 'h/semana',
+    targetWeek12: '60% menos (≤ 6 h/semana)',
+    targetValue: 6,
+    targetLabel: '≤ 6 h/semana (supuesto)',
+    direction: 'decrease', // menor es mejor
+    status: 'en-camino',
+    description: 'Tiempo semanal invertido en juntas síncronas por persona gracias a la agenda previa de 24h y representación por el Gemelo.'
   },
   {
     id: 'kpi-2',
-    name: 'Bienestar digital (0-100)',
-    category: 'Base',
+    name: 'Bienestar digital',
+    category: 'Salud y Enfoque',
+    type: 'base',
     baseline: '48 / 100',
+    baselineValue: 48,
+    currentValue: 72,
+    unit: 'pts (0–100)',
     targetWeek12: '75 de 100 (supuesto)',
-    unit: 'Puntos',
-    status: 'En camino',
+    targetValue: 75,
+    targetLabel: '75 / 100 (supuesto)',
+    direction: 'increase', // mayor es mejor
+    status: 'en-camino',
+    description: 'Índice de desconexión efectiva, respeto a pausas inmersivas de 10 min y programación matutina de mensajes no urgentes.'
   },
   {
     id: 'kpi-3',
     name: 'Conflictos escalados a gerencia',
-    category: 'Base',
+    category: 'Gobernanza Cultural',
+    type: 'base',
     baseline: '6 por trimestre',
-    targetWeek12: '50% menos (≤3 por trimestre)',
-    unit: 'Conflictos',
-    status: 'En camino',
+    baselineValue: 6,
+    currentValue: 2,
+    unit: 'casos/trimestre',
+    targetWeek12: '50% menos (≤ 3 por trimestre)',
+    targetValue: 3,
+    targetLabel: '≤ 3 por trimestre (supuesto)',
+    direction: 'decrease', // menor es mejor
+    status: 'meta-alcanzada',
+    description: 'Discrepancias críticas no resueltas entre sedes que requieren intervención ejecutiva fuera de los embajadores neutrales.'
   },
   {
     id: 'kpi-4',
-    name: 'Confianza intercultural (1-5)',
-    category: 'Base',
-    baseline: '3.1 / 5',
+    name: 'Confianza intercultural',
+    category: 'Gobernanza Cultural',
+    type: 'base',
+    baseline: '3.1 / 5.0',
+    baselineValue: 3.1,
+    currentValue: 3.5,
+    unit: 'escala (1–5)',
     targetWeek12: '+0.5 puntos frente a semana 1 (3.6 / 5)',
-    unit: 'Escala 1-5',
-    status: 'En camino',
+    targetValue: 3.6,
+    targetLabel: '3.6 / 5.0 (supuesto)',
+    direction: 'increase', // mayor es mejor
+    status: 'en-camino',
+    description: 'Seguridad psicológica y claridad comunicativa entre sedes de alto contexto (Tokio) y bajo contexto directo (Berlín).'
   },
   {
     id: 'kpi-5',
     name: 'Entregas a tiempo',
-    category: 'Base',
-    baseline: '62% de sprints',
-    targetWeek12: '85% de entregas a tiempo',
+    category: 'Rendimiento Operativo',
+    type: 'base',
+    baseline: '62%',
+    baselineValue: 62,
+    currentValue: 81,
     unit: '%',
-    status: 'En camino',
+    targetWeek12: '85% de entregas a tiempo',
+    targetValue: 85,
+    targetLabel: '85% (supuesto)',
+    direction: 'increase', // mayor es mejor
+    status: 'en-camino',
+    description: 'Porcentaje de iniciativas y compromisos del sprint concluidos dentro de la ventana acordada sin horas extraordinarias.'
   },
   {
     id: 'kpi-6',
     name: 'Retrabajo por entrega',
-    category: 'Innovación',
-    baseline: '35% de esfuerzo en reprocesos',
-    targetWeek12: '30% menos (≤24.5%)',
+    category: 'Innovación y Calidad',
+    type: 'innovacion',
+    baseline: '35%',
+    baselineValue: 35,
+    currentValue: 26,
     unit: '%',
-    status: 'En camino',
+    targetWeek12: '30% menos (≤ 24.5%)',
+    targetValue: 24.5,
+    targetLabel: '≤ 24.5% (supuesto)',
+    direction: 'decrease', // menor es mejor
+    status: 'en-camino',
+    description: 'Proporción de esfuerzo técnico invertido en refactorizar código o rediseñar interfaces por desacuerdos de alcance.'
   },
   {
     id: 'kpi-7',
     name: 'Mejoras del equipo aplicadas',
-    category: 'Innovación',
+    category: 'Innovación y Calidad',
+    type: 'innovacion',
     baseline: '0.3 por sprint',
+    baselineValue: 0.3,
+    currentValue: 1.0,
+    unit: 'mejoras/sprint',
     targetWeek12: 'Al menos 1 por sprint',
-    unit: 'Mejoras / sprint',
-    status: 'En camino',
+    targetValue: 1.0,
+    targetLabel: '≥ 1.0 por sprint (supuesto)',
+    direction: 'increase', // mayor es mejor
+    status: 'meta-alcanzada',
+    description: 'Propuestas de optimización procedimental o técnica ejecutadas directamente por los miembros de las tres sedes.'
   },
 ];
 

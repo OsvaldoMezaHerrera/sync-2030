@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import {
   TEAM_MEMBERS,
   SITES_CONFIG,
@@ -8,6 +8,7 @@ import {
   INITIAL_CARDS,
   PRACTICES_SEED,
   RETURN_KPIS,
+  INITIAL_AUDIT_LOGS,
   INITIAL_MEETING_INVITATIONS
 } from '../data/seedData';
 import {
@@ -193,6 +194,174 @@ export function SyncProvider({ children }) {
 
   const [isMeetingsDrawerOpen, setIsMeetingsDrawerOpen] = useState(false);
 
+  // 8. MÓDULO 4: MEDICIÓN DE APLICACIÓN E IMPACTO
+  // 8.1 Las 8 prácticas ponderadas
+  const [practices, setPractices] = useState(() => {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed.practices) && parsed.practices.length > 0) return parsed.practices;
+      } catch (e) {}
+    }
+    return PRACTICES_SEED;
+  });
+
+  // 8.2 Los 7 indicadores de impacto/retorno
+  const [kpis, setKpis] = useState(() => {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed.kpis) && parsed.kpis.length > 0) return parsed.kpis;
+      } catch (e) {}
+    }
+    return RETURN_KPIS;
+  });
+
+  // 8.3 Bitácora de verificaciones semanales de auditoría (QA / Iván Ortega)
+  const [auditLogs, setAuditLogs] = useState(() => {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed.auditLogs) && parsed.auditLogs.length > 0) return parsed.auditLogs;
+      } catch (e) {}
+    }
+    return INITIAL_AUDIT_LOGS;
+  });
+
+  // Cálculo en tiempo real de la Fórmula Oficial de % de Aplicación
+  // % Aplicación = Σ (peso_i × cumplimiento_i) ÷ 100
+  const adoptionScore = useMemo(() => {
+    if (!practices || practices.length === 0) return 0;
+    const totalWeighted = practices.reduce((acc, curr) => {
+      const weight = Number(curr.weight) || 0;
+      const percent = Number(curr.currentPercent) || 0;
+      return acc + (weight * percent);
+    }, 0);
+    return Math.round((totalWeighted / 100) * 10) / 10; // 1 decimal de precisión
+  }, [practices]);
+
+  // Semáforo oficial de adopción:
+  // - Consolidado (Verde): 85% o más
+  // - En adopción (Amarillo): 70% a 84.9%
+  // - En riesgo (Rojo): menos de 70%
+  const adoptionStatus = useMemo(() => {
+    if (adoptionScore >= 85) {
+      return {
+        level: 'consolidado',
+        color: 'verde',
+        label: 'Consolidado',
+        badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        textClass: 'text-emerald-700',
+        accentBg: 'bg-emerald-500',
+        lightBg: 'bg-emerald-50',
+        borderClass: 'border-emerald-300',
+        description: 'La adopción de prácticas supera el umbral objetivo de la Semana 12 (≥ 85%). Operación asíncrona estabilizada.'
+      };
+    }
+    if (adoptionScore >= 70) {
+      return {
+        level: 'en-adopcion',
+        color: 'amarillo',
+        label: 'En adopción',
+        badgeClass: 'bg-amber-50 text-amber-700 border-amber-200',
+        textClass: 'text-amber-700',
+        accentBg: 'bg-amber-500',
+        lightBg: 'bg-amber-50',
+        borderClass: 'border-amber-300',
+        description: 'El equipo se encuentra dentro de la franja esperada entre Semanas 4 y 12 (70% - 84.9%). Se requiere mantener la cadencia.'
+      };
+    }
+    return {
+      level: 'en-riesgo',
+      color: 'rojo',
+      label: 'En riesgo',
+      badgeClass: 'bg-rose-50 text-rose-700 border-rose-200',
+      textClass: 'text-rose-700',
+      accentBg: 'bg-rose-500',
+      lightBg: 'bg-rose-50',
+      borderClass: 'border-rose-300',
+      description: 'El índice se encuentra por debajo del 70%. Se recomienda auditoría de procesos y alineación con los embajadores de sede.'
+    };
+  }, [adoptionScore]);
+
+  // Actualizar cumplimiento de una práctica ponderada
+  const updatePracticePercent = (practiceId, newPercent) => {
+    const clamped = Math.max(0, Math.min(100, Math.round(Number(newPercent) || 0)));
+    setPractices(prev =>
+      prev.map(p => (p.id === practiceId ? { ...p, currentPercent: clamped } : p))
+    );
+  };
+
+  // Actualizar un indicador de impacto / retorno
+  const updateKpiValue = (kpiId, newValue, note = '') => {
+    const numVal = Number(newValue);
+    if (isNaN(numVal)) return { success: false, message: 'Valor no numérico' };
+
+    setKpis(prev =>
+      prev.map(kpi => {
+        if (kpi.id === kpiId) {
+          // Evaluar si alcanza la meta proyectada
+          let isTargetReached = false;
+          if (kpi.direction === 'decrease') {
+            isTargetReached = numVal <= kpi.targetValue;
+          } else {
+            isTargetReached = numVal >= kpi.targetValue;
+          }
+
+          const newStatus = isTargetReached ? 'meta-alcanzada' : 'en-camino';
+          const updateRecord = {
+            previousValue: kpi.currentValue,
+            newValue: numVal,
+            updatedAt: new Date().toISOString(),
+            updatedBy: `${activeUser.name} (${activeUser.baseCity})`,
+            note: note || 'Ajuste de medición operativa de sprint',
+          };
+
+          return {
+            ...kpi,
+            currentValue: numVal,
+            status: newStatus,
+            lastUpdated: updateRecord,
+            history: [...(kpi.history || []), updateRecord],
+          };
+        }
+        return kpi;
+      })
+    );
+    return { success: true };
+  };
+
+  // Registrar nueva auditoría semanal por muestreo (Iván Ortega / QA)
+  const addAuditLog = ({ practiceId, auditedPercent, observations, week = 'Semana 12' }) => {
+    const practice = practices.find(p => p.id === practiceId);
+    if (!practice) return { success: false, message: 'Práctica no encontrada' };
+
+    const reported = practice.currentPercent;
+    const audited = Math.max(0, Math.min(100, Math.round(Number(auditedPercent) || 0)));
+    const discrepancy = Math.abs(reported - audited);
+    const hasAlert = discrepancy > 10;
+
+    const newLog = {
+      id: `audit-${Date.now()}`,
+      week,
+      practiceId,
+      practiceName: practice.name,
+      reportedPercent: reported,
+      auditedPercent: audited,
+      discrepancy,
+      status: hasAlert ? 'alerta' : 'conformidad',
+      auditor: `${activeUser.name} (${activeUser.role} / ${activeUser.baseCity})`,
+      date: new Date().toISOString().split('T')[0],
+      observations: observations || (hasAlert ? 'Discrepancia superior al 10% detectada en el muestreo. Se activa seguimiento preventivo.' : 'Muestreo conforme dentro del margen de tolerancia.'),
+    };
+
+    setAuditLogs(prev => [newLog, ...prev]);
+    return { success: true, log: newLog, hasAlert };
+  };
+
   // Persistencia en localStorage
   useEffect(() => {
     const stateToSave = {
@@ -208,6 +377,9 @@ export function SyncProvider({ children }) {
       twinAiEnabled,
       manualSummaries,
       meetings,
+      practices,
+      kpis,
+      auditLogs,
     };
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
@@ -227,6 +399,9 @@ export function SyncProvider({ children }) {
     twinAiEnabled,
     manualSummaries,
     meetings,
+    practices,
+    kpis,
+    auditLogs,
   ]);
 
   // Usuario activo resuelto
@@ -259,6 +434,9 @@ export function SyncProvider({ children }) {
     setTwinAiEnabled(true);
     setManualSummaries([]);
     setMeetings(INITIAL_MEETING_INVITATIONS);
+    setPractices(PRACTICES_SEED);
+    setKpis(RETURN_KPIS);
+    setAuditLogs(INITIAL_AUDIT_LOGS);
     setCurrentView('panel-global');
   };
 
@@ -700,13 +878,21 @@ export function SyncProvider({ children }) {
         updateMeetingAttendance,
         createMeeting,
 
+        // Módulo 4: Medición de Aplicación e Impacto
+        practices,
+        updatePracticePercent,
+        adoptionScore,
+        adoptionStatus,
+        kpis,
+        updateKpiValue,
+        auditLogs,
+        addAuditLog,
+
         // Catálogos globales
         teamMembers: TEAM_MEMBERS,
         sitesConfig: SITES_CONFIG,
         rotatingSchedule: ROTATING_SCHEDULE,
         immersiveRooms: IMMERSIVE_ROOMS,
-        practices: PRACTICES_SEED,
-        kpis: RETURN_KPIS,
       }}
     >
       {children}
