@@ -27,8 +27,8 @@ export default function App() {
         {/* Barra Lateral Izquierda Fija */}
         <Sidebar />
 
-        {/* Único contenedor principal con scroll independiente */}
-        <main ref={mainContentRef} className="flex-1 overflow-y-auto min-w-0">
+        {/* Único contenedor principal con scroll independiente y expansión suave */}
+        <main ref={mainContentRef} className="flex-1 overflow-y-auto min-w-0 transition-all duration-200">
           {currentView === 'panel-global' && <PanelGlobalView />}
           {currentView === 'gemelo-sincronia' && <GemeloSincroniaView />}
           {currentView === 'tablero-valor' && <TableroValorView />}

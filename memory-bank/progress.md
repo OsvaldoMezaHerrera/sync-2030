@@ -41,7 +41,13 @@
   - **Sincronización bidireccional:** Conexión en tiempo real con las aprobaciones confirmadas en el Gemelo de Sincronía.
   - Barra superior de filtros rápidos por Semáforo, por Sede y por Integrante.
   - Modal de detalle y edición rápida (`CardDetailModal`) y modal de nueva tarjeta (`NewCardModal`).
-- [x] Verificación de compilación: `npm run build` ejecutado exitosamente en 1.54s sin errores ni advertencias.
+- [x] **Mejoras UI/UX, Layout Colapsable y Ordenamiento Automático:**
+  - Menú lateral colapsable con botón discreto en `TopBar.jsx` y `Sidebar.jsx`, transición fluida de 200ms y expansión completa del contenedor `<main>`.
+  - Ordenamiento automático estricto dentro de cada columna: Prioridad Semáforo Cultural (Rojo > Amarillo > Verde) con desempate por FIFO (marca temporal `createdAt`).
+  - Indicador discreto en cabecera del tablero: "Orden: Semáforo + FIFO".
+  - Scroll vertical independiente en cada una de las 4 columnas con encabezado fijo (`sticky top-0`).
+  - Resaltado visual temporal (~2s) y notificación toast en la esquina inferior derecha confirmando traslados de columna y actualizaciones.
+- [x] Verificación de compilación: `npm run build` ejecutado exitosamente en 1.47s sin errores ni advertencias.
 - [x] Auditoría de términos de UI: 100% libre de términos prohibidos ("Demo", "Prueba QA", "Pitch", "Maqueta conceptual", etc.).
 
 ## En Curso / Próximos Hitos

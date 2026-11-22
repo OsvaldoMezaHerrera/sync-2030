@@ -208,3 +208,30 @@ export function formatRemainingTime(expiresAt) {
     seconds,
   };
 }
+
+/**
+ * Ordenamiento automático estricto de tarjetas:
+ * 1. Prioridad por Semáforo Cultural: Rojo siempre arriba, luego Amarillo en medio y Verde hasta abajo.
+ * 2. Desempate por FIFO (First In, First Out): entre tarjetas del mismo color, la más antigua (menor createdAt) primero.
+ */
+export function sortCardsTrafficLightFIFO(cardsList = []) {
+  const PRIORITY_MAP = {
+    rojo: 1,
+    amarillo: 2,
+    verde: 3,
+  };
+
+  return [...cardsList].sort((a, b) => {
+    const pA = PRIORITY_MAP[a.culturalTrafficLight] || 4;
+    const pB = PRIORITY_MAP[b.culturalTrafficLight] || 4;
+
+    if (pA !== pB) {
+      return pA - pB;
+    }
+
+    // Desempate por FIFO: la más antigua primero (createdAt menor / anterior)
+    const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return timeA - timeB;
+  });
+}

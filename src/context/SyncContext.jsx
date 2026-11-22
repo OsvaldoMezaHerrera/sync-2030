@@ -41,6 +41,22 @@ export function SyncProvider({ children }) {
   // 2. Vista de navegación actual
   const [currentView, setCurrentView] = useState('panel-global');
 
+  // 2.1 Menú lateral colapsable
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (typeof parsed.isSidebarCollapsed === 'boolean') return parsed.isSidebarCollapsed;
+      } catch (e) {}
+    }
+    return false;
+  });
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(prev => !prev);
+  };
+
   // 3. Horario Rotativo y Agenda 24h
   const [scheduleWeek, setScheduleWeek] = useState(() => {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -181,6 +197,7 @@ export function SyncProvider({ children }) {
   useEffect(() => {
     const stateToSave = {
       activeUserId,
+      isSidebarCollapsed,
       scheduleWeek,
       agendaState,
       antiFatigueMessages,
@@ -199,6 +216,7 @@ export function SyncProvider({ children }) {
     }
   }, [
     activeUserId,
+    isSidebarCollapsed,
     scheduleWeek,
     agendaState,
     antiFatigueMessages,
@@ -636,6 +654,9 @@ export function SyncProvider({ children }) {
         activeUser,
         activeUserId,
         setActiveUserId,
+        isSidebarCollapsed,
+        setIsSidebarCollapsed,
+        toggleSidebar,
         currentView,
         setCurrentView,
         scheduleWeek,

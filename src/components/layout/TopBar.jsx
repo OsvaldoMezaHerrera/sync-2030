@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSync } from '../../context/SyncContext';
-import { Settings, RotateCcw, Check, Calendar, Bell } from 'lucide-react';
+import { Settings, RotateCcw, Check, Calendar, Bell, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import MeetingsDrawer from '../meetings/MeetingsDrawer';
 
 export default function TopBar() {
@@ -12,7 +12,9 @@ export default function TopBar() {
     resetSystemData,
     meetings,
     isMeetingsDrawerOpen,
-    setIsMeetingsDrawerOpen
+    setIsMeetingsDrawerOpen,
+    isSidebarCollapsed,
+    toggleSidebar
   } = useSync();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -47,8 +49,23 @@ export default function TopBar() {
   return (
     <>
       <header className="h-16 shrink-0 bg-white border-b border-slate-200 px-6 flex items-center justify-between z-20">
-        {/* Marca y Lema Oficial */}
+        {/* Marca y Lema Oficial con Botón de Alternar Menú Lateral */}
         <div className="flex items-center space-x-3">
+          {/* Botón discreto de colapsar / expandir menú lateral */}
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            title={isSidebarCollapsed ? "Mostrar menú lateral" : "Ocultar menú lateral"}
+            aria-label={isSidebarCollapsed ? "Mostrar menú lateral" : "Ocultar menú lateral"}
+            className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-indigo-600 transition-colors"
+          >
+            {isSidebarCollapsed ? (
+              <PanelLeftOpen className="w-4 h-4" />
+            ) : (
+              <PanelLeftClose className="w-4 h-4" />
+            )}
+          </button>
+
           <div className="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-black text-lg shadow-sm">
             S
           </div>

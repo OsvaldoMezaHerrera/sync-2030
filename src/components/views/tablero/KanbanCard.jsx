@@ -21,6 +21,7 @@ export default function KanbanCard({
   onOpenDetail,
   onMove,
   onIntervene,
+  isHighlighted = false,
 }) {
   const [remainingTime, setRemainingTime] = useState(() =>
     formatRemainingTime(card.redCountdownExpiresAt)
@@ -65,14 +66,26 @@ export default function KanbanCard({
   return (
     <div
       onClick={() => onOpenDetail(card)}
-      className={`group relative bg-white rounded-xl border border-slate-200 shadow-xs hover:shadow-md transition-all duration-150 cursor-pointer overflow-hidden border-l-4 ${
+      className={`group relative bg-white rounded-xl border shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden border-l-4 ${
+        isHighlighted
+          ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-slate-100 bg-indigo-50/40 shadow-md scale-[1.01]'
+          : 'border-slate-200 hover:border-slate-300'
+      } ${
         card.culturalTrafficLight === 'rojo'
-          ? 'border-l-rose-500 hover:border-slate-300'
+          ? 'border-l-rose-500'
           : card.culturalTrafficLight === 'amarillo'
-          ? 'border-l-amber-500 hover:border-slate-300'
-          : 'border-l-emerald-500 hover:border-slate-300'
+          ? 'border-l-amber-500'
+          : 'border-l-emerald-500'
       }`}
     >
+      {/* Indicador de resaltado visual tras movimiento o reordenamiento */}
+      {isHighlighted && (
+        <div className="absolute top-0 right-0 bg-indigo-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-md shadow-xs animate-pulse z-10 flex items-center gap-1">
+          <Sparkles className="w-2.5 h-2.5" />
+          <span>Posición confirmada</span>
+        </div>
+      )}
+
       <div className="p-4 space-y-3">
         {/* Encabezado: Semáforo y Sedes */}
         <div className="flex items-start justify-between gap-2">

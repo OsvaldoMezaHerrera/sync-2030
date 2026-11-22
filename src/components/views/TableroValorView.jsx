@@ -13,13 +13,16 @@ import {
   AlertTriangle,
   RotateCcw,
   Sparkles,
-  Info
+  Info,
+  ArrowDownUp,
+  X
 } from 'lucide-react';
 import {
   BOARD_COLUMNS,
   CULTURAL_LIGHTS,
   validateEntryRule,
-  validateWipLimit
+  validateWipLimit,
+  sortCardsTrafficLightFIFO
 } from '../../utils/boardRules';
 import KanbanColumn from './tablero/KanbanColumn';
 import CardDetailModal from './tablero/CardDetailModal';
@@ -49,6 +52,41 @@ export default function TableroValorView() {
   const [newCardInitialColumn, setNewCardInitialColumn] = useState('por-hacer');
   const [selectedCardForIntervention, setSelectedCardForIntervention] = useState(null);
   const [governanceAlert, setGovernanceAlert] = useState(null); // { reason, missing, message, card, ownerId }
+
+  // Estados de seguimiento y feedback visual al mover tarjetas
+  const [highlightedCardId, setHighlightedCardId] = useState(null);
+  const [toastNotification, setToastNotification] = useState(null); // { id, message, detail, columnTitle }
+
+  // Limpiar resaltado visual tras 2 segundos
+  React.useEffect(() => {
+    if (!highlightedCardId) return;
+    const timer = setTimeout(() => {
+      setHighlightedCardId(null);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [highlightedCardId]);
+
+  // Ocultar toast tras 3.5 segundos
+  React.useEffect(() => {
+    if (!toastNotification) return;
+    const timer = setTimeout(() => {
+      setToastNotification(null);
+    }, 3500);
+    return () => clearTimeout(timer);
+  }, [toastNotification]);
+
+  // Helper para disparar notificación y destello visual
+  const triggerCardFeedback = (card, targetColId) => {
+    const col = BOARD_COLUMNS.find(c => c.id === targetColId);
+    const colTitle = col ? col.title : targetColId;
+    setHighlightedCardId(card.id);
+    setToastNotification({
+      id: Date.now(),
+      message: `Iniciativa trasladada a «${colTitle}»`,
+      detail: card.title,
+      columnTitle: colTitle,
+    });
+  };
 
   // Métricas rápidas de cabecera
   const metrics = useMemo(() => {
@@ -86,9 +124,12 @@ export default function TableroValorView() {
 
   // Manejo de movimiento de tarjeta con validación de gobernanza
   const handleMoveCard = (cardId, targetColumn) => {
+    const targetCard = cards.find(c => c.id === cardId);
     const result = moveCard(cardId, targetColumn);
     if (!result.success) {
       setGovernanceAlert(result);
+    } else if (targetCard) {
+      triggerCardFeedback(targetCard, targetColumn);
     }
   };
 
@@ -100,6 +141,15 @@ export default function TableroValorView() {
       return;
     }
     setSelectedCardForDetail(null);
+    const updatedCard = cards.find(c => c.id === cardId) || { id: cardId, title: 'Iniciativa' };
+    const targetCol = BOARD_COLUMNS.find(c => c.id === (updatedData.column || updatedCard.column));
+    setHighlightedCardId(cardId);
+    setToastNotification({
+      id: Date.now(),
+      message: `Iniciativa actualizada en «${targetCol ? targetCol.title : 'Tablero'}»`,
+      detail: updatedData.title || updatedCard.title,
+      columnTitle: targetCol ? targetCol.title : 'Tablero',
+    });
   };
 
   // Manejo de creación de tarjeta
@@ -279,6 +329,15 @@ export default function TableroValorView() {
 
           {/* Grupo 2: Sedes y Grupo 3: Integrantes */}
           <div className="flex flex-wrap items-center gap-2">
+            {/* Indicador discreto del orden activo (Semáforo + FIFO) */}
+            <div
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium shadow-2xs shrink-0"
+              title="Ordenamiento automático: Rojo primero (SLA 24h), Amarillo en medio, Verde hasta abajo; desempate por orden de registro (FIFO)"
+            >
+              <ArrowDownUp className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Orden: <strong className="text-slate-900 font-semibold">Semáforo + FIFO</strong></span>
+            </div>
+
             {/* Filtro por Sede */}
             <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl px-2 py-1">
               <Building2 className="w-3.5 h-3.5 text-slate-400" />
@@ -326,21 +385,23 @@ export default function TableroValorView() {
         </div>
       </div>
 
-      {/* 4. Tablero Kanban (4 Columnas) */}
+      {/* 4. Tablero Kanban (4 Columnas con scroll independiente y orden Semáforo + FIFO) */}
       <div className="overflow-x-auto pb-4">
         <div className="flex gap-4 min-w-[1240px]">
           {BOARD_COLUMNS.map(col => {
-            const columnCards = filteredCards.filter(c => c.column === col.id);
+            const rawColumnCards = filteredCards.filter(c => c.column === col.id);
+            const sortedColumnCards = sortCardsTrafficLightFIFO(rawColumnCards);
             return (
               <KanbanColumn
                 key={col.id}
                 column={col}
-                cards={columnCards}
+                cards={sortedColumnCards}
                 teamMembers={teamMembers}
                 onOpenDetail={(card) => setSelectedCardForDetail(card)}
                 onMove={handleMoveCard}
                 onIntervene={(card) => setSelectedCardForIntervention(card)}
                 onAddNew={handleOpenAddNew}
+                highlightedCardId={highlightedCardId}
               />
             );
           })}
@@ -393,6 +454,32 @@ export default function TableroValorView() {
             setSelectedCardForDetail(card);
           }}
         />
+      )}
+
+      {/* 6. Notificación Discreta (Toast) al Mover o Reordenar Tarjetas */}
+      {toastNotification && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl border border-slate-700 max-w-sm animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0 text-white shadow-xs">
+            <CheckCircle2 className="w-4 h-4" />
+          </div>
+          <div className="flex-1 min-w-0 pr-1">
+            <p className="text-xs font-bold leading-tight text-white">
+              {toastNotification.message}
+            </p>
+            <p className="text-[11px] text-slate-300 truncate mt-0.5">
+              {toastNotification.detail}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setToastNotification(null)}
+            className="text-slate-400 hover:text-white p-1 rounded-md hover:bg-slate-800 transition-colors"
+            title="Cerrar aviso"
+            aria-label="Cerrar aviso"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
       )}
     </div>
   );

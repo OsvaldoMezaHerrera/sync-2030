@@ -1,9 +1,9 @@
 import React from 'react';
 import { useSync } from '../../context/SyncContext';
-import { Globe, Bot, Kanban, BarChart3, ShieldCheck } from 'lucide-react';
+import { Globe, Bot, Kanban, BarChart3, ShieldCheck, PanelLeftClose } from 'lucide-react';
 
 export default function Sidebar() {
-  const { currentView, setCurrentView } = useSync();
+  const { currentView, setCurrentView, isSidebarCollapsed, toggleSidebar } = useSync();
 
   const navItems = [
     {
@@ -33,13 +33,30 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col justify-between shrink-0 h-full overflow-y-auto">
+    <aside
+      className={`bg-slate-900 text-slate-300 flex flex-col justify-between shrink-0 h-full overflow-y-auto transition-all duration-200 ease-in-out ${
+        isSidebarCollapsed
+          ? 'w-0 -translate-x-full opacity-0 pointer-events-none overflow-hidden'
+          : 'w-64 translate-x-0 opacity-100'
+      }`}
+    >
       {/* Navegación Principal */}
-      <div className="p-4 space-y-6">
+      <div className="p-4 space-y-6 min-w-[16rem]">
         <div>
-          <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase px-3">
-            Módulos del Sistema
-          </span>
+          <div className="flex items-center justify-between px-3 mb-1">
+            <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+              Módulos del Sistema
+            </span>
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              title="Ocultar menú lateral"
+              aria-label="Ocultar menú lateral"
+            >
+              <PanelLeftClose className="w-3.5 h-3.5" />
+            </button>
+          </div>
           <nav className="mt-2 space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;

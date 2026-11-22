@@ -1,12 +1,34 @@
 # Active Context: SYNC 2030
 
 ## Foco Actual
-- **Fase:** Módulo 3 Implementado: Tablero por Valor y Semáforo Cultural (`TableroValorView.jsx`).
-- **Estado de código:** `npm run build` pasa limpiamente en 1.54s sin errores ni advertencias. Cero términos escolares o etiquetas prohibidas en la UI (100% conforme a la Regla de Producto Real).
+- **Fase:** Mejoras UI/UX y Ordenamiento en Layout y Módulo 3 (Tablero por Valor) implementadas exitosamente.
+- **Estado de código:** `npm run build` pasa limpiamente en 1.47s sin errores ni advertencias. Cero términos escolares o etiquetas prohibidas en la UI (100% conforme a la Regla de Producto Real).
 
 ## Decisiones e Implementaciones Recientes
 
-### 1. Construcción del Módulo 3: Tablero por Valor y Semáforo Cultural
+### 1. Mejoras de UI/UX y Layout Colapsable
+- **Menú Lateral Colapsable (`App.jsx`, `Sidebar.jsx`, `TopBar.jsx`, `SyncContext.jsx`):**
+  - Botón discreto en la barra superior (`TopBar.jsx`) con íconos de `PanelLeftClose` y `PanelLeftOpen` de `lucide-react` para colapsar y expandir el menú izquierdo.
+  - Botón de repliegue adicional en el encabezado del menú lateral (`Sidebar.jsx`).
+  - Animación fluida con `transition-all duration-200 ease-in-out` que reduce el ancho del sidebar a 0 y permite que el contenedor principal `<main>` se expanda suavemente para aprovechar el 100% del ancho de la pantalla, brindando un espacio óptimo y despejado para las 4 columnas del tablero.
+  - Persistencia del estado colapsado en `localStorage`.
+
+### 2. Ordenamiento Automático: Prioridad de Semáforo + FIFO
+- **Regla Estricta en `src/utils/boardRules.js` (`sortCardsTrafficLightFIFO`):**
+  - **1° Criterio:** Semáforo Cultural: Rojo siempre arriba (prioridad 1 / SLA 24h), Amarillo en medio (prioridad 2) y Verde hasta abajo (prioridad 3).
+  - **2° Criterio (Desempate FIFO):** Entre tarjetas del mismo color, la más antigua (`createdAt` menor/anterior) aparece primero.
+  - Todas las tarjetas (precargadas y creadas dinámicamente) cuentan con marca temporal `createdAt`.
+  - Etiqueta visual discreta en la barra de filtros del tablero: `Orden: Semáforo + FIFO` con ícono `ArrowDownUp`.
+
+### 3. Desplazamiento Independiente y Seguimiento Visual de Tarjetas
+- **Scroll Vertical Independiente por Columna (`KanbanColumn.jsx`):**
+  - Cada una de las 4 columnas Kanban cuenta con scroll vertical independiente (`flex-1 overflow-y-auto pr-1 min-h-0`) y altura fija adaptada a la pantalla (`h-[calc(100vh-285px)]`).
+  - Encabezado de columna fijo (`sticky top-0 z-10 bg-slate-100/95 backdrop-blur-xs`) para que nunca se pierda la referencia del título ni del límite WIP al desplazarse entre muchas tarjetas.
+- **Resaltado Visual y Notificación Discreta (Toast en `TableroValorView.jsx` y `KanbanCard.jsx`):**
+  - Resaltado visual breve (~2 segundos) con anillo `ring-2 ring-indigo-500`, escala sutil y badge `Posición confirmada` sobre la tarjeta trasladada o actualizada.
+  - Toast discreto en la esquina inferior derecha confirmando a qué columna pasó y el título de la iniciativa, con autocierre en 3.5 segundos.
+
+### 4. Construcción del Módulo 3: Tablero por Valor y Semáforo Cultural
 - **Arquitectura desacoplada de reglas (`src/utils/boardRules.js`):**
   - Definición de 4 columnas: `Por hacer`, `En curso`, `En revisión` y `Terminado`.
   - Semáforo Cultural: Verde (Bajo riesgo), Amarillo (Atención pronta) y Rojo (Alerta crítica con SLA 24h y embajador neutral).
