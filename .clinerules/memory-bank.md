@@ -16,3 +16,8 @@ Al iniciar cualquier sesión o tarea nueva, lee primero todos los archivos en `m
 - `memory-bank/progress.md`: qué ya funciona y qué falta.
 
 Al terminar cada módulo o antes de cerrar sesión, actualiza `memory-bank/activeContext.md` y `memory-bank/progress.md`.
+
+## Regla de Producto Real (Obligatoria en la UI)
+- La aplicación debe lucir y redactarse 100% como un software empresarial real en producción (SYNC 2030).
+- PROHIBIDO mostrar en la interfaz palabras como "Prueba QA", "Demo", "Guion", "Pitch", "Exposición", "Rúbrica", "Simulador escolar" o "Maqueta conceptual".
+- Usa terminología profesional de producto (ej. "Control de Agenda", "Escudo Anti-Fatiga", "Espacios Inmersivos", "Restaurar entorno" en un menú discreto de ajustes).
