@@ -1,42 +1,36 @@
 # Active Context: SYNC 2030
 
 ## Foco Actual
-- **Fase:** Ajuste de Layout global (menú y barra fija con scroll exclusivo en `<main>`) y Módulo 2 (Gemelo de Sincronía) rediseñado y completado con éxito.
-- **Estado de código:** `npm run build` pasa limpiamente en 1.45s sin errores ni advertencias. Cero términos escolares o etiquetas QA en la interfaz, 100% conforme a la Regla de Producto Real.
+- **Fase:** Mejora Integral de UI/UX, Corrección de Scroll por Navegación y Flujo de Reuniones Asíncronas (Drawer en TopBar con delegación al Gemelo).
+- **Estado de código:** `npm run build` pasa limpiamente en 1.40s sin errores ni advertencias. Cero términos escolares o etiquetas QA en la interfaz, 100% conforme a la Regla de Producto Real.
 
 ## Decisiones e Implementaciones Recientes
 
-### 1. Ajuste de Layout (Estructura Fija con Scroll Independiente)
-- **`App.jsx`:** Contenedor principal con `h-screen overflow-hidden flex flex-col`. La fila inferior contiene el sidebar y el área de contenido dentro de un contenedor flex con `overflow-hidden`.
-- **`TopBar.jsx`:** Fijada arriba con `h-16 shrink-0` y z-index 20.
-- **`Sidebar.jsx`:** Fijada a la izquierda con `shrink-0 h-full overflow-y-auto`, garantizando que no se desplace al interactuar con el contenido.
-- **`<main>`:** Único contenedor con scroll independiente gracias a `flex-1 overflow-y-auto min-w-0`.
+### 1. Corrección de Scroll al Cambiar de Vista (`App.jsx`)
+- Se implementó `mainContentRef` con `useRef` enlazado al elemento `<main>` scrollable.
+- `useEffect` suscrito a `currentView`: ejecuta `mainContentRef.current?.scrollTo({ top: 0, behavior: 'instant' })` cada vez que el usuario navega entre módulos en el Sidebar.
 
-### 2. Módulo 2: Gemelo de Sincronía (`GemeloSincroniaView.jsx` y `src/services/gemeloService.js`)
-- **Capa Desacoplada (`gemeloService.js`):**
-  - Lógica 100% local, determinista y offline lista para enchufar un LLM en el futuro sin modificar la UI.
-  - `detectScopeChange`: Detección estricta de palabras clave asociadas a ampliación de sprint o módulos nuevos.
-  - `analyzeCulturalTone`: Descodificación intercultural (Tokio: alto contexto indirecto; Berlín: bajo contexto crítico directo; Guadalajara: iteración rápida) con cálculo de nivel de riesgo ('verde', 'amarillo', 'rojo').
-  - `processMeetingIntervention`: Genera la respuesta del Gemelo ante intervenciones en reuniones, protege el alcance y genera la solicitud automática para la bandeja humana.
-- **Sección 1: Mi Reporte para el Gemelo (Qué hice / Qué falta):**
-  - Formulario editable sincronizado por integrante activo (`activeUserId`), guardando: *Avances completados*, *Pendientes actuales* y *Bloqueos o notas*.
-  - Botón de guardado y confirmación visual inmediata ("Gemelo actualizado" con hora de sincronización).
-- **Sección 2: Resumen de Reuniones Recientes:**
-  - Minutas generadas por el Gemelo con fecha, participantes, puntos clave y acuerdos.
-  - Botón de limpieza de historial y estado vacío claro con la etiqueta exacta: **"Sin reuniones recientes"**.
-- **Sección 3: Solicitudes y Cambios Sugeridos (Aprobación Humana):**
-  - Muestra cambios y módulos solicitados en reunión destacando quién los pidió y su sede (Jorge Moranchel · Berlín, Alan Gadiel · Tokio, etc.).
-  - Bloque integrado de Traducción Cultural (*Mensaje original* vs *Intención real* y semáforo sugerido) con ejemplos de Tokio y Berlín precargados.
-  - 3 acciones operativas:
-    1. *Confirmar / Aprobar:* valida el cambio y actualiza `SyncContext` / Tablero por Valor.
-    2. *Solicitar más detalles (Correo):* modal rápido prellenado con el destinatario exacto (`nombre (sede) <correo>`), asunto y mensaje corporativo para aclarar requerimientos.
-    3. *Rechazar / Posponer:* descarta o difiere la solicitud con confirmación visual.
-- **Sección 4: Consola de Reunión y Modo Respaldo Manual:**
-  - Consola interactiva para simular intervenciones seleccionando integrante y sede. El Gemelo responde exponiendo avances y pendientes del ausente, deniega compromisos de nuevos módulos o alcance, y canaliza automáticamente la petición a la bandeja de Solicitudes y Cambios Sugeridos.
-  - Interruptor visible de *Modo Respaldo Manual* para pausar el motor de IA y registrar minutas rotativas manuales.
+### 2. Bandeja Sobrepuesta de Convocatorias a Reuniones (`TopBar.jsx` y `MeetingsDrawer.jsx`)
+- **Acceso Directo y Notificaciones en `TopBar`:**
+  - Botón limpio de "Reuniones" con badge dinámico que contabiliza las invitaciones pendientes del integrante activo (`pendingInvitationsCount`).
+  - Al hacer clic abre el drawer lateral deslizante con fondo semitransparente (`backdrop-blur-sm`).
+- **Gestión Integral en el Drawer (`MeetingsDrawer.jsx`):**
+  - Lista de convocatorias con título, convocante y sede, hora local calculada para el integrante activo (ej. `07:00 CST`, `14:00 CET`, `22:00 JST`) y estado de gobernanza (Agenda validada ≥24h vs Sin agenda 24h).
+  - Selector de 3 estados modificable en cualquier momento: `Pendiente`, `Asistiré en vivo` o `No puedo asistir — Enviar a mi Gemelo de IA` (incluso si antes había aceptado).
+  - Al delegar a su Gemelo de IA, se muestra un aviso explícito confirmando que el Gemelo asistirá presentando el reporte guardado (Avances y Pendientes).
+  - Formulario de **Nueva Convocatoria:** permite definir título, sede convocante, horario base (12:00 UTC, 13:00 UTC, 14:30 UTC), participantes convocados y cumplimiento de agenda validada ≥24h con temas específicos.
+
+### 3. Refinamiento UI/UX y Menor Densidad Visual
+- **`PanelGlobalView.jsx` (2 Pestañas Internas Limpias):**
+  1. *Jornadas y Horario Rotativo:* Relojes por sede en vivo (Guadalajara, Berlín, Tokio) con estado Activo/Descanso, selector de perspectiva horaria y Horario Semanal A/B con compensación equitativa para Berlín.
+  2. *Gobernanza y Salas:* Política de Agenda 24h con conmutador de validación, Escudo Anti-Fatiga con cola de entrega programada, y Espacios Inmersivos (Sala de Alineación en vivo con avatares o bloqueada si falta agenda previa; Salas de Ensayo, Mentoría y Calma).
+- **`GemeloSincroniaView.jsx` (3 Pestañas Internas Limpias):**
+  1. *Solicitudes y Aprobaciones:* Contador badge de solicitudes pendientes en la pestaña; solicitudes con solicitante/sede, bloque de Traductor Cultural (*Mensaje original* vs *Intención real* y semáforo de riesgo) y las 3 acciones: Confirmar/Aprobar, Solicitar detalles por correo (con modal prellenado corporativo) y Rechazar/Posponer.
+  2. *Mi Reporte al Gemelo:* Formulario editable por integrante activo (avances, pendientes, bloqueos), confirmación de sincronización y **bloque de Reuniones Delegadas al Gemelo** enlazado a `SyncContext` con acceso directo a la bandeja.
+  3. *Minutas y Consola:* Resumen de minutas recientes con estado vacío oficial *"Sin reuniones recientes"*, consola interactiva de intervenciones con presets interculturales y Modo Respaldo Manual con bitácora rotativa.
 
 ## Siguientes Pasos
 - Construir el **Módulo 3: Tablero por Valor + Semáforo Cultural** (`TableroValorView.jsx` y `src/utils/boardRules.js`):
-  - Columnas Kanban (`Por hacer`, `En curso` con WIP ≤ 2 por persona, `En revisión`, `Terminado`).
+  - Columnas Kanban (`Por hacer`, `En curso` con límite WIP ≤ 2 por persona, `En revisión`, `Terminado`).
   - Regla estricta de entrada a `En curso` (bloqueo si falta dueño o criterio de aceptación).
   - Semáforo Cultural con cuenta regresiva en vivo de 24:00:00 y asignación automática del embajador neutral según el par de sedes en conflicto.

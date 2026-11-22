@@ -353,3 +353,92 @@ export const RETURN_KPIS = [
     status: 'En camino',
   },
 ];
+
+// Convocatorias iniciales de reuniones para el sistema asíncrono
+export const INITIAL_MEETING_INVITATIONS = [
+  {
+    id: 'meet-inv-1',
+    title: 'Sincronía de Arquitectura de API y Tokens de Diseño',
+    organizerId: 'jorge-moranchel',
+    organizerName: 'Jorge Moranchel',
+    site: 'Berlín',
+    utcTime: '13:00 UTC',
+    localTimes: {
+      'guadalajara': '07:00 CST',
+      'berlin': '14:00 CET',
+      'tokio': '22:00 JST',
+    },
+    hasAgenda24h: true,
+    agendaTopics: [
+      'Revisión de payload JSON para exportaciones Figma v2',
+      'Compatibilidad de endpoints GraphQL con frontend Tokio',
+      'Definición de compuertas de calidad sin horas extraordinarias'
+    ],
+    attendees: {
+      'osvaldo-meza': 'attending',
+      'jorge-moranchel': 'attending',
+      'alan-gadiel': 'delegated_twin',
+      'brayan-beltran': 'attending',
+      'nicholas-sotelo': 'pending',
+      'ivan-ortega': 'attending',
+      'fernando-garrido': 'pending',
+    },
+    createdAt: 'Ayer 16:30 CET',
+  },
+  {
+    id: 'meet-inv-2',
+    title: 'Revisión Táctica de Reducción de Retrabajo — Sprint 12',
+    organizerId: 'osvaldo-meza',
+    organizerName: 'Osvaldo Meza',
+    site: 'Guadalajara',
+    utcTime: '12:00 UTC',
+    localTimes: {
+      'guadalajara': '06:00 CST',
+      'berlin': '13:00 CET',
+      'tokio': '21:00 JST',
+    },
+    hasAgenda24h: true,
+    agendaTopics: [
+      'Análisis de bloqueos en el tablero por valor',
+      'Acuerdos de entrega de especificaciones de padding',
+      'Validación de límites WIP por persona (máx 2)'
+    ],
+    attendees: {
+      'osvaldo-meza': 'attending',
+      'jorge-moranchel': 'pending',
+      'alan-gadiel': 'pending',
+      'brayan-beltran': 'pending',
+      'nicholas-sotelo': 'attending',
+      'ivan-ortega': 'pending',
+      'fernando-garrido': 'pending',
+    },
+    createdAt: 'Hoy 08:00 CST',
+  },
+  {
+    id: 'meet-inv-3',
+    title: 'Alineación de Criterios de Aceptación y QA',
+    organizerId: 'ivan-ortega',
+    organizerName: 'Iván Ortega',
+    site: 'Berlín',
+    utcTime: '14:30 UTC',
+    localTimes: {
+      'guadalajara': '08:30 CST',
+      'berlin': '15:30 CET',
+      'tokio': '23:30 JST',
+    },
+    hasAgenda24h: false,
+    agendaTopics: [
+      'Discusión preliminar sobre cobertura de pruebas automatizadas en CI'
+    ],
+    attendees: {
+      'osvaldo-meza': 'pending',
+      'jorge-moranchel': 'attending',
+      'alan-gadiel': 'delegated_twin',
+      'brayan-beltran': 'pending',
+      'nicholas-sotelo': 'pending',
+      'ivan-ortega': 'attending',
+      'fernando-garrido': 'pending',
+    },
+    createdAt: 'Hoy 10:15 CET',
+  },
+];

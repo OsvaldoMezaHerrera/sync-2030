@@ -7,7 +7,8 @@ import {
   INITIAL_AGENDA_STATE,
   INITIAL_CARDS,
   PRACTICES_SEED,
-  RETURN_KPIS
+  RETURN_KPIS,
+  INITIAL_MEETING_INVITATIONS
 } from '../data/seedData';
 import {
   MEMBER_DEFAULT_REPORTS,
@@ -157,6 +158,20 @@ export function SyncProvider({ children }) {
     return [];
   });
 
+  // 7. Bandeja de Convocatorias a Reuniones
+  const [meetings, setMeetings] = useState(() => {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed.meetings)) return parsed.meetings;
+      } catch (e) {}
+    }
+    return INITIAL_MEETING_INVITATIONS;
+  });
+
+  const [isMeetingsDrawerOpen, setIsMeetingsDrawerOpen] = useState(false);
+
   // Persistencia en localStorage
   useEffect(() => {
     const stateToSave = {
@@ -170,6 +185,7 @@ export function SyncProvider({ children }) {
       suggestedRequests,
       twinAiEnabled,
       manualSummaries,
+      meetings,
     };
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
@@ -187,13 +203,14 @@ export function SyncProvider({ children }) {
     suggestedRequests,
     twinAiEnabled,
     manualSummaries,
+    meetings,
   ]);
 
   // Usuario activo resuelto
   const activeUser = TEAM_MEMBERS.find(m => m.id === activeUserId) || TEAM_MEMBERS[0];
 
   // Métodos de gestión de datos
-  const resetDemoData = () => {
+  const resetSystemData = () => {
     localStorage.removeItem(LOCAL_STORAGE_KEY);
     setActiveUserId('osvaldo-meza');
     setScheduleWeek('A');
@@ -218,6 +235,7 @@ export function SyncProvider({ children }) {
     setSuggestedRequests(INITIAL_SUGGESTED_REQUESTS);
     setTwinAiEnabled(true);
     setManualSummaries([]);
+    setMeetings(INITIAL_MEETING_INVITATIONS);
     setCurrentView('panel-global');
   };
 
@@ -363,6 +381,65 @@ export function SyncProvider({ children }) {
     setManualSummaries(prev => [newSummary, ...prev]);
   };
 
+  // 7. Gestión de Reuniones e Invitaciones (Bandeja / Drawer)
+  const updateMeetingAttendance = (meetingId, memberId, newStatus) => {
+    setMeetings(prev =>
+      prev.map(m => {
+        if (m.id === meetingId) {
+          return {
+            ...m,
+            attendees: {
+              ...m.attendees,
+              [memberId]: newStatus,
+            },
+          };
+        }
+        return m;
+      })
+    );
+  };
+
+  const createMeeting = ({
+    title,
+    site = activeUser.baseCity,
+    utcTime = '13:00 UTC',
+    localTimes = null,
+    hasAgenda24h = true,
+    agendaTopics = [],
+    participantIds = [],
+  }) => {
+    // Generar horas aproximadas por sede si no se proporcionan
+    const defaultLocalTimes = localTimes || {
+      guadalajara: '07:00 CST',
+      berlin: '14:00 CET',
+      tokio: '22:00 JST',
+    };
+
+    const initialAttendees = {};
+    TEAM_MEMBERS.forEach(member => {
+      if (participantIds.length === 0 || participantIds.includes(member.id)) {
+        initialAttendees[member.id] = member.id === activeUserId ? 'attending' : 'pending';
+      }
+    });
+
+    const newMeeting = {
+      id: `meet-inv-${Date.now()}`,
+      title: title || 'Alineación Asíncrona Extraordinaria',
+      organizerId: activeUserId,
+      organizerName: activeUser.name,
+      site,
+      utcTime,
+      localTimes: defaultLocalTimes,
+      hasAgenda24h,
+      agendaTopics: agendaTopics.length > 0 ? agendaTopics : ['Puntos de sincronía operativa sin sobreasignación'],
+      attendees: initialAttendees,
+      createdAt: 'Hace un momento',
+    };
+
+    setMeetings(prev => [newMeeting, ...prev]);
+    return newMeeting;
+  };
+
   return (
     <SyncContext.Provider
       value={{
@@ -382,7 +459,7 @@ export function SyncProvider({ children }) {
         sendAntiFatigueMessage,
         cards,
         setCards,
-        resetDemoData,
+        resetSystemData,
 
         // Módulo 2: Gemelo de Sincronía
         userReports,
@@ -399,6 +476,14 @@ export function SyncProvider({ children }) {
         toggleTwinAi,
         manualSummaries,
         addManualSummary,
+
+        // Bandeja de Convocatorias a Reuniones
+        meetings,
+        setMeetings,
+        isMeetingsDrawerOpen,
+        setIsMeetingsDrawerOpen,
+        updateMeetingAttendance,
+        createMeeting,
 
         // Catálogos globales
         teamMembers: TEAM_MEMBERS,
